@@ -5,3 +5,5 @@
 .DS_Store
 /build
 /captures
+com_crashlytics_export_strings.xml
+fabric.properties
