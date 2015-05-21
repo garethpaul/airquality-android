@@ -16,13 +16,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
-/**
- * Created by gjones on 5/20/15.
- */
 public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
-
-    private Exception exception;
-
 
     @Override
     protected JSONObject doInBackground(String... params) {
@@ -46,13 +40,11 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
             HttpGet httpget = new HttpGet(url);
 
             try {
-                Log.i(getClass().getSimpleName(), "send  task - start");
+                //Log.i(getClass().getSimpleName(), "send  task - start");
                 ResponseHandler<String> responseHandler = new BasicResponseHandler();
                 String responseBody = httpclient.execute(httpget,
                         responseHandler);
-                // Parse
                 JSONObject json = new JSONObject(responseBody);
-                //JSONArray jArray = json.getJSONArray("posts");
                 return json;
 
 
