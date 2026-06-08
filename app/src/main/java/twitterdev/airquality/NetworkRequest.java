@@ -17,6 +17,12 @@ import org.json.JSONObject;
 import java.io.IOException;
 
 public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
+    private static final String AIR_QUALITY_URL =
+            "https://garethpaul-app.appspot.com/api/airquality";
+
+    public static String buildUrl(String lat, String lng) {
+        return AIR_QUALITY_URL + "?lat=" + lat + "&lng=" + lng;
+    }
 
     @Override
     protected JSONObject doInBackground(String... params) {
@@ -36,7 +42,7 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
 
             // Instantiate an HttpClient
             HttpClient httpclient = new DefaultHttpClient(p);
-            String url = "https://garethpaul-app.appspot.com/api/airquality?lat=" + lat + "&lng=" + lng;
+            String url = buildUrl(lat, lng);
             HttpGet httpget = new HttpGet(url);
 
             try {

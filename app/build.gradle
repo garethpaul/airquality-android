@@ -4,11 +4,14 @@ buildscript {
     }
 
     dependencies {
-        classpath 'io.fabric.tools:gradle:1.+'
+        classpath 'io.fabric.tools:gradle:1.14.4'
     }
 }
 apply plugin: 'com.android.application'
-apply plugin: 'io.fabric'
+
+if (project.hasProperty('fabricApiKey') && project.fabricApiKey) {
+    apply plugin: 'io.fabric'
+}
 
 repositories {
     maven { url 'https://maven.fabric.io/public' }
@@ -45,4 +48,5 @@ dependencies {
     compile('com.twitter.sdk.android:twitter:1.5.1@aar') {
         transitive = true;
     }
+    testCompile 'junit:junit:4.12'
 }
