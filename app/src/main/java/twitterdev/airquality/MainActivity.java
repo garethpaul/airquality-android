@@ -56,6 +56,8 @@ import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends Activity implements LocationListener, SensorEventListener {
 
+    private static final String AIR_QUALITY_UNAVAILABLE = "Air Quality Unavailable";
+
     private Context context;
     boolean isGPSEnabled = false;
     boolean isNetworkEnabled = false;
@@ -110,18 +112,28 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         request.execute(String.valueOf(latitude), String.valueOf(longitude));
         try {
             json = (JSONObject) request.get();
+            if (json == null) {
+                showAirQualityUnavailable(null);
+                return;
+            }
             state = json.get("air_quality").toString();
 
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            showAirQualityUnavailable(e);
         } catch (ExecutionException e) {
-            e.printStackTrace();
+            showAirQualityUnavailable(e);
         } catch (JSONException e) {
-            e.printStackTrace();
+            showAirQualityUnavailable(e);
         }
     }
 
     private void displayAccelerometer(SensorEvent event) {
+        if (state == null) {
+            getWindow().getDecorView().setBackgroundColor(Color.WHITE);
+            logo.setBackgroundResource(R.drawable.sky);
+            text.setText(AIR_QUALITY_UNAVAILABLE);
+            return;
+        }
 
         // Many sensors return 3 values, one for each axis.
         float x = event.values[0];
@@ -147,6 +159,18 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         } else {
             logo.setBackgroundResource(R.drawable.sky);
             getWindow().getDecorView().setBackgroundColor(Color.WHITE);
+        }
+    }
+
+    private void showAirQualityUnavailable(Exception exception) {
+        state = null;
+        text.setText(AIR_QUALITY_UNAVAILABLE);
+        Toast.makeText(context, "Unable to load air quality data", Toast.LENGTH_LONG).show();
+
+        if (exception == null) {
+            Log.e(getClass().getSimpleName(), "Air quality request returned no data");
+        } else {
+            Log.e(getClass().getSimpleName(), "Unable to load air quality data", exception);
         }
     }
 
