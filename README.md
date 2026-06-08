@@ -10,7 +10,7 @@ This project currently uses the original Android build stack:
 - Gradle wrapper 2.2.1
 - Android Gradle Plugin 1.2.3
 - compile SDK 22 / target SDK 22
-- Android build-tools 23.0.3
+- Android build-tools 24.0.3
 - Fabric Twitter SDK 1.x
 
 Use a JDK and Android SDK compatible with that toolchain before attempting a

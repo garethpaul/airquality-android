@@ -108,6 +108,6 @@ The project is pinned to a 2015-era Android toolchain and depends on Fabric/Twit
 
 - `app/build.gradle` defines Fabric buildscript tooling and app dependencies.
 - `build.gradle` defines Android Gradle Plugin 1.2.3 and JCenter repositories.
-- `app/build.gradle` now uses Android build-tools 23.0.3 to avoid the 32-bit `aapt` loader failure from build-tools 22.0.1 on the current Linux host.
+- `app/build.gradle` now uses Android build-tools 24.0.3 to avoid the 32-bit `aapt` loader failure from older build-tools on the current Linux host.
 - `gradle/wrapper/gradle-wrapper.properties` pins Gradle 2.2.1.
 - `./gradlew tasks --no-daemon` currently starts Gradle but fails because no Android SDK path is configured in this environment.
