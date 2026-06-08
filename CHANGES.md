@@ -19,3 +19,7 @@
    installs, while leaving project lint checks active.
 6. Added setup documentation, a modernization plan, and CircleCI that runs lint,
    JVM tests, and a debug APK build.
+7. Expanded the `NetworkRequest.buildUrl` contract to cover coordinate
+   trimming and invalid coordinate rejection.
+8. Added SDK-free static contracts and `make check` for URL construction,
+   manifest permission, empty credential, and Fabric tooling guardrails.

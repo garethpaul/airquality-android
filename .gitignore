@@ -7,3 +7,5 @@
 /captures
 com_crashlytics_export_strings.xml
 fabric.properties
+__pycache__/
+*.pyc
