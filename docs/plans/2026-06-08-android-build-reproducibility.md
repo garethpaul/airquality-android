@@ -22,7 +22,7 @@ The project is pinned to a 2015-era Android toolchain and depends on Fabric/Twit
 ## Requirements
 
 - R1. Buildscript classpaths must avoid dynamic dependency versions so repeated builds resolve the same tooling.
-- R2. The README must identify the legacy Android SDK and Gradle prerequisites needed to run the existing project.
+- R2. The README must identify the legacy Android SDK, build-tools, and Gradle prerequisites needed to run the existing project.
 - R3. The README must document the available local verification commands and explain the Android SDK configuration needed before running them.
 - R4. A local JVM unit test must cover at least one pure behavior seam without requiring a device or emulator.
 - R5. Duplicate manifest permissions should be removed when they are clearly redundant.
@@ -108,5 +108,6 @@ The project is pinned to a 2015-era Android toolchain and depends on Fabric/Twit
 
 - `app/build.gradle` defines Fabric buildscript tooling and app dependencies.
 - `build.gradle` defines Android Gradle Plugin 1.2.3 and JCenter repositories.
+- `app/build.gradle` now uses Android build-tools 23.0.3 to avoid the 32-bit `aapt` loader failure from build-tools 22.0.1 on the current Linux host.
 - `gradle/wrapper/gradle-wrapper.properties` pins Gradle 2.2.1.
 - `./gradlew tasks --no-daemon` currently starts Gradle but fails because no Android SDK path is configured in this environment.
