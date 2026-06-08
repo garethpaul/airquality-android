@@ -1,0 +1,50 @@
+version: 2.1
+
+jobs:
+  verify:
+    docker:
+      - image: cimg/openjdk:8.0
+    environment:
+      ANDROID_HOME: /home/circleci/android-sdk
+      ANDROID_SDK_ROOT: /home/circleci/android-sdk
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-android-sdk-24-{{ checksum "app/build.gradle" }}
+            - v1-android-sdk-24-
+      - run:
+          name: Install Android SDK
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y unzip
+            mkdir -p "$ANDROID_HOME/cmdline-tools"
+            rm -rf "$ANDROID_HOME/cmdline-tools/latest" "$ANDROID_HOME/cmdline-tools/tools"
+            curl -fsSL \
+              https://dl.google.com/android/repository/commandlinetools-linux-6200805_latest.zip \
+              -o /tmp/android-commandline-tools.zip
+            unzip -q /tmp/android-commandline-tools.zip -d "$ANDROID_HOME/cmdline-tools"
+            mv "$ANDROID_HOME/cmdline-tools/tools" "$ANDROID_HOME/cmdline-tools/latest"
+            yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+              "platform-tools" \
+              "platforms;android-22" \
+              "build-tools;24.0.3" \
+              "extras;android;m2repository"
+      - save_cache:
+          key: v1-android-sdk-24-{{ checksum "app/build.gradle" }}
+          paths:
+            - /home/circleci/android-sdk
+      - run:
+          name: Lint
+          command: ./gradlew lint --no-daemon
+      - run:
+          name: Test
+          command: ./gradlew test --no-daemon
+      - run:
+          name: Build
+          command: ./gradlew assembleDebug --no-daemon
+
+workflows:
+  verify:
+    jobs:
+      - verify

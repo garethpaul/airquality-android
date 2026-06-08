@@ -28,6 +28,7 @@ The project is pinned to a 2015-era Android toolchain and depends on Fabric/Twit
 - R5. Duplicate manifest permissions should be removed when they are clearly redundant.
 - R6. The plan must preserve follow-up work for a broader Android modernization pass instead of silently widening this change.
 - R7. Local verification results must distinguish code failures from missing environment prerequisites.
+- R8. CI must run lint, local JVM tests, and debug APK assembly on pushes and pull requests.
 
 ---
 
@@ -38,6 +39,7 @@ The project is pinned to a 2015-era Android toolchain and depends on Fabric/Twit
 - **Extract a pure URL builder:** Pull the air-quality endpoint string construction into `NetworkRequest.buildUrl` so local JVM tests can cover request composition without Android runtime dependencies.
 - **Document before migrating:** Add a README baseline for setup and verification because the repository currently has no usable project instructions.
 - **Avoid toolchain jumps in this pass:** Updating Gradle 2.2.1, Android Gradle Plugin 1.2.3, compile SDK 22, or Fabric/Twitter SDKs belongs in a dedicated migration with emulator or device verification.
+- **Keep legacy lint usable:** Suppress only the obsolete lint API database error emitted by Android Gradle Plugin 1.2.3 with current SDK command-line installs; do not disable lint globally.
 
 ---
 
@@ -109,5 +111,6 @@ The project is pinned to a 2015-era Android toolchain and depends on Fabric/Twit
 - `app/build.gradle` defines Fabric buildscript tooling and app dependencies.
 - `build.gradle` defines Android Gradle Plugin 1.2.3 and JCenter repositories.
 - `app/build.gradle` now uses Android build-tools 24.0.3 to avoid the 32-bit `aapt` loader failure from older build-tools on the current Linux host.
+- `lint.xml` ignores the legacy lint API database error because current SDK command-line installs no longer ship `platform-tools/api/api-versions.xml`.
 - `gradle/wrapper/gradle-wrapper.properties` pins Gradle 2.2.1.
-- `./gradlew tasks --no-daemon` currently starts Gradle but fails because no Android SDK path is configured in this environment.
+- Local verification succeeded after installing the Android SDK command-line tools, platform 22, build-tools 24.0.3, and the Android support repository.

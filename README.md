@@ -46,6 +46,8 @@ Run local JVM unit tests:
 ./gradlew test --no-daemon
 ```
 
+CircleCI runs the same gate on push: lint, JVM tests, then `assembleDebug`.
+
 If the SDK path is missing, Gradle fails during Android plugin configuration
 with `SDK location not found`; configure `ANDROID_HOME` or `local.properties`
 and rerun the command.
@@ -53,6 +55,10 @@ and rerun the command.
 The Fabric Gradle plugin is applied only when a `fabricApiKey` Gradle property
 is present. Set that property in an untracked local Gradle properties file when
 you need Fabric-specific build behavior.
+
+Android Gradle Plugin 1.2.3 expects an obsolete lint API database path that is
+not present in current SDK command-line installs. `lint.xml` ignores only that
+tooling error while keeping project lint checks active.
 
 ## Modernization Notes
 

@@ -15,6 +15,7 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
         android:background="@drawable/sky"
+        android:contentDescription="@string/air_quality_image_description"
         android:adjustViewBounds="true"
         android:scaleType="fitCenter"/>
 
@@ -22,13 +23,13 @@
         android:layout_width="wrap_content"
         android:layout_height="300dip"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Point Phone At Sky"
+        android:text="@string/point_phone_at_sky"
         android:id="@+id/textView"
         android:layout_above="@+id/imageView"
         android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true"
         android:textAlignment="center"
         android:gravity="center"
-        android:textSize="30dip" />
+        android:textSize="30sp" />
 
 </RelativeLayout>

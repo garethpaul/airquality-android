@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">AirQuality</string>
-
-    <string name="hello_world">Hello world!</string>
+    <string name="air_quality_image_description">Air quality status image</string>
+    <string name="point_phone_at_sky">Point Phone At Sky</string>
     <string name="action_settings">Settings</string>
 </resources>
