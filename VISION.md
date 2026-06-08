@@ -1,5 +1,8 @@
 ## AirQuality Android Vision
 
+This document explains the current state and direction of the project.
+Project overview and developer docs: [`README.md`](README.md)
+
 AirQuality Android is a legacy Android app that signs in with Twitter, reads the
 device location, and shows nearby air quality state from the backend service.
 
