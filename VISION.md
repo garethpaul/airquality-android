@@ -37,6 +37,11 @@ Contribution rules:
 
 ## Security And Privacy
 
+Canonical security policy and reporting:
+
+- [`SECURITY.md`](SECURITY.md)
+
+
 Location and account identity are sensitive. Changes that touch location,
 Twitter/Fabric auth, or backend requests need to make data flow explicit and
 avoid logging personal information.
