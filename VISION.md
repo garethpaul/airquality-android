@@ -44,7 +44,7 @@ avoid logging personal information.
 Secrets belong in local Gradle properties, environment configuration, or the
 platform credential store. They must not be committed.
 
-## What We Will Not Merge For Now
+## What We Will Not Merge (For Now)
 
 - Broad rewrites that mix build-system migration with user-facing behavior
 - New analytics, tracking, or identity integrations without a clear privacy case
