@@ -50,3 +50,6 @@ platform credential store. They must not be committed.
 - New analytics, tracking, or identity integrations without a clear privacy case
 - Hardcoded API keys, tokens, endpoints, or local SDK paths
 - Dependency bumps that only work on one developer machine
+
+This list is a roadmap guardrail, not a permanent rule.
+Strong user demand and strong technical rationale can change it.
