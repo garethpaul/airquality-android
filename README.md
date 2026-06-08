@@ -1,5 +1,8 @@
 # AirQuality Android
 
+<!-- README-OVERVIEW-IMAGE -->
+![Project overview](docs/readme-overview.svg)
+
 Legacy Android app that signs in with Twitter, reads the device location, and
 shows nearby air quality state from the backend service.
 
