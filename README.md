@@ -83,4 +83,4 @@ Keep changes small and tied to the project that is already present in this repos
 
 Prior README summary:
 
-> AirQuality Android <!-- README-OVERVIEW-IMAGE --> Legacy Android app that signs in with Twitter, reads the device location, and shows nearby air quality state from the backend service. Toolchain This project currently uses the original Android build stack: - Gradle wrapper 2.2.1 - Android Gradle Plugin 1.2.3 - compile SDK 22 / target SDK 22 - Android build-tools 24.0.3 - Fabric Twitter SDK 1.x Use a JDK and Android SDK compatible with that toolchain before attempting a
+> AirQuality Android Legacy Android app that signs in with Twitter, reads the device location, and shows nearby air quality state from the backend service. Toolchain This project currently uses the original Android build stack: - Gradle wrapper 2.2.1 - Android Gradle Plugin 1.2.3 - compile SDK 22 / target SDK 22 - Android build-tools 24.0.3 - Fabric Twitter SDK 1.x Use a JDK and Android SDK compatible with that toolchain before attempting a
