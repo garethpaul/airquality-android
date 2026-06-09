@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-06-09
+
+1. Wired the existing connection and socket timeout settings into the actual
+   Apache HTTP client used by `NetworkRequest`, and added an SDK-free static
+   contract to keep the backend request bounded on hosts without Android SDK
+   verification.
+
 ## 2026-06-08
 
 1. Stabilized the legacy Android build by pinning Fabric Gradle tooling and

@@ -22,6 +22,8 @@ Priority:
 - Avoid committing local SDK paths, signing material, or Fabric/Twitter secrets
 - Keep CircleCI and local Gradle verification aligned where the old stack allows
 - Keep background request inputs validated before network calls are attempted
+- Keep backend request timeouts wired into the HTTP client that actually executes
+  the request
 
 Next priorities:
 

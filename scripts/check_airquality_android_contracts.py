@@ -86,6 +86,15 @@ def main():
         failures,
     )
     require(
+        "REQUEST_TIMEOUT_MILLIS" in network
+        and "HttpConnectionParams.setConnectionTimeout(httpParams" in network
+        and "HttpConnectionParams.setSoTimeout(httpParams, REQUEST_TIMEOUT_MILLIS)" in network
+        and "new DefaultHttpClient(httpParams)" in network
+        and "new DefaultHttpClient(p)" not in network,
+        "NetworkRequest must apply request timeouts to the actual HTTP client",
+        failures,
+    )
+    require(
         permissions.count("android.permission.ACCESS_FINE_LOCATION") == 1
         and permissions.count("android.permission.ACCESS_COARSE_LOCATION") == 1
         and permissions.count("android.permission.INTERNET") == 1,

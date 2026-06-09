@@ -21,6 +21,7 @@ import java.net.URLEncoder;
 
 public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
     private static final String TAG = "NetworkRequest";
+    private static final int REQUEST_TIMEOUT_MILLIS = 1000;
     private static final String AIR_QUALITY_URL =
             "https://garethpaul-app.appspot.com/api/airquality";
 
@@ -84,15 +85,11 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
 
             HttpParams httpParams = new BasicHttpParams();
             HttpConnectionParams.setConnectionTimeout(httpParams,
-                    1000);
-            HttpConnectionParams.setSoTimeout(httpParams, 1000);
-            //
-            HttpParams p = new BasicHttpParams();
-            // p.setParameter("name", pvo.getName());
-            p.setParameter("user", "1");
+                    REQUEST_TIMEOUT_MILLIS);
+            HttpConnectionParams.setSoTimeout(httpParams, REQUEST_TIMEOUT_MILLIS);
 
             // Instantiate an HttpClient
-            HttpClient httpclient = new DefaultHttpClient(p);
+            HttpClient httpclient = new DefaultHttpClient(httpParams);
             HttpGet httpget = new HttpGet(url);
 
             try {
