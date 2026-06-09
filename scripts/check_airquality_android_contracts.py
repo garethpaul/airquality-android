@@ -54,6 +54,13 @@ def main():
         failures,
     )
     require(
+        "buildUrlFromParams(String... params)" in network
+        and "params == null || params.length < 2" in network
+        and "buildUrlFromParams(params)" in network,
+        "NetworkRequest must validate AsyncTask parameters before building a request URL",
+        failures,
+    )
+    require(
         "Double.isNaN" in network and "Double.isInfinite" in network,
         "NetworkRequest coordinate validation must reject non-finite values",
         failures,
@@ -64,6 +71,18 @@ def main():
         and "buildUrlRejectsNonNumericAndOutOfRangeCoordinates" in network_tests
         and "Infinity" in network_tests,
         "NetworkRequestTest must cover trimming and invalid coordinate inputs",
+        failures,
+    )
+    require(
+        "buildUrlFromParamsUsesFirstLatitudeAndLongitude" in network_tests
+        and "buildUrlFromParamsRejectsMissingAsyncTaskParameters" in network_tests
+        and "assertInvalidParams((String[]) null)" in network_tests,
+        "NetworkRequestTest must cover AsyncTask parameter validation",
+        failures,
+    )
+    require(
+        "catch (Throwable" not in network and "Log.w(TAG" in network,
+        "NetworkRequest must not silently swallow broad background request failures",
         failures,
     )
     require(

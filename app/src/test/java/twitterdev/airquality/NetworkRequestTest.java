@@ -21,6 +21,20 @@ public class NetworkRequestTest {
     }
 
     @Test
+    public void buildUrlFromParamsUsesFirstLatitudeAndLongitude() {
+        assertEquals(
+                "https://garethpaul-app.appspot.com/api/airquality?lat=37.7&lng=-122.4",
+                NetworkRequest.buildUrlFromParams("37.7", "-122.4", "ignored"));
+    }
+
+    @Test
+    public void buildUrlFromParamsRejectsMissingAsyncTaskParameters() {
+        assertInvalidParams((String[]) null);
+        assertInvalidParams();
+        assertInvalidParams("37.7");
+    }
+
+    @Test
     public void buildUrlRejectsMissingCoordinates() {
         assertInvalidCoordinate(null, "-122.4");
         assertInvalidCoordinate("", "-122.4");
@@ -40,6 +54,15 @@ public class NetworkRequestTest {
         try {
             NetworkRequest.buildUrl(lat, lng);
             fail("Expected invalid coordinates to be rejected");
+        } catch (IllegalArgumentException expected) {
+            // Expected path.
+        }
+    }
+
+    private void assertInvalidParams(String... params) {
+        try {
+            NetworkRequest.buildUrlFromParams(params);
+            fail("Expected invalid async task parameters to be rejected");
         } catch (IllegalArgumentException expected) {
             // Expected path.
         }

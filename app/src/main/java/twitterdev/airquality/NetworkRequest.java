@@ -12,6 +12,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -19,6 +20,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
 public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
+    private static final String TAG = "NetworkRequest";
     private static final String AIR_QUALITY_URL =
             "https://garethpaul-app.appspot.com/api/airquality";
 
@@ -28,6 +30,14 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
         return AIR_QUALITY_URL
                 + "?lat=" + urlEncode(normalizedLat)
                 + "&lng=" + urlEncode(normalizedLng);
+    }
+
+    public static String buildUrlFromParams(String... params) {
+        if (params == null || params.length < 2) {
+            throw new IllegalArgumentException("lat and lng are required");
+        }
+
+        return buildUrl(params[0], params[1]);
     }
 
     private static String normalizeCoordinate(
@@ -70,9 +80,7 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
     @Override
     protected JSONObject doInBackground(String... params) {
         try {
-            String lat, lng;
-            lat = params[0];
-            lng = params[1];
+            String url = buildUrlFromParams(params);
 
             HttpParams httpParams = new BasicHttpParams();
             HttpConnectionParams.setConnectionTimeout(httpParams,
@@ -85,7 +93,6 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
 
             // Instantiate an HttpClient
             HttpClient httpclient = new DefaultHttpClient(p);
-            String url = buildUrl(lat, lng);
             HttpGet httpget = new HttpGet(url);
 
             try {
@@ -98,16 +105,16 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
 
 
             } catch (ClientProtocolException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                Log.w(TAG, "Air quality request failed", e);
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                Log.w(TAG, "Air quality request failed", e);
+            } catch (JSONException e) {
+                Log.w(TAG, "Invalid air quality response JSON", e);
             }
 
 
-        } catch (Throwable t) {
-
+        } catch (IllegalArgumentException e) {
+            Log.w(TAG, "Invalid air quality request parameters", e);
         }
         return null;
     }

@@ -21,6 +21,7 @@ Priority:
 - Keep the location-to-air-quality flow easy to inspect
 - Avoid committing local SDK paths, signing material, or Fabric/Twitter secrets
 - Keep CircleCI and local Gradle verification aligned where the old stack allows
+- Keep background request inputs validated before network calls are attempted
 
 Next priorities:
 

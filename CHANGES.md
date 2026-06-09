@@ -23,3 +23,6 @@
    trimming and invalid coordinate rejection.
 8. Added SDK-free static contracts and `make check` for URL construction,
    manifest permission, empty credential, and Fabric tooling guardrails.
+9. Routed background air-quality requests through an explicit `AsyncTask`
+   parameter contract and replaced silent broad failure swallowing with warning
+   logs.
