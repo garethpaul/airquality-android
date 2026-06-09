@@ -2,6 +2,10 @@
 
 ## 2026-06-09
 
+1. Guarded `LoginActivity.onActivityResult` so already-authenticated sessions
+   do not dereference an uninitialized Twitter login button.
+2. Added static checker coverage for the login button lifecycle guard.
+
 1. Wired the existing connection and socket timeout settings into the actual
    Apache HTTP client used by `NetworkRequest`, and added an SDK-free static
    contract to keep the backend request bounded on hosts without Android SDK

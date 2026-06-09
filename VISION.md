@@ -26,6 +26,8 @@ Priority:
   the request
 - Keep malformed or missing air-quality responses from crashing sensor-driven
   rendering
+- Keep Twitter login activity-result handling guarded when a session already
+  exists
 
 Next priorities:
 

@@ -32,6 +32,7 @@ def main():
 
     network = read_text("app/src/main/java/twitterdev/airquality/NetworkRequest.java")
     main_activity = read_text("app/src/main/java/twitterdev/airquality/MainActivity.java")
+    login_activity = read_text("app/src/main/java/twitterdev/airquality/LoginActivity.java")
     network_tests = read_text("app/src/test/java/twitterdev/airquality/NetworkRequestTest.java")
     app_build = read_text("app/build.gradle")
     application = read_text("app/src/main/java/twitterdev/airquality/AirQualityApplication.java")
@@ -114,6 +115,14 @@ def main():
         and "Thread.currentThread().interrupt()" in main_activity
         and 'Log.w(TAG, "Unable to load air quality"' in main_activity,
         "MainActivity must log request failures without raw stack traces",
+        failures,
+    )
+    require(
+        "if (loginButton != null)" in login_activity
+        and "loginButton.onActivityResult(requestCode, resultCode, data)" in login_activity
+        and login_activity.index("if (loginButton != null)")
+        < login_activity.index("loginButton.onActivityResult(requestCode, resultCode, data)"),
+        "LoginActivity must guard loginButton before forwarding activity results",
         failures,
     )
     require(
