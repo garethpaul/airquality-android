@@ -124,6 +124,23 @@ def main():
         failures,
     )
     require(
+        "if (event == null || event.sensor == null || event.values == null" in main_activity
+        and "|| event.values.length < 3)" in main_activity
+        and '"Ignoring malformed sensor event"' in main_activity
+        and main_activity.index("if (event == null || event.sensor == null || event.values == null")
+        < main_activity.index("displayAccelerometer(event)"),
+        "MainActivity must guard malformed sensor events before rendering",
+        failures,
+    )
+    require(
+        "if (logo == null || text == null)" in main_activity
+        and '"Air quality display views unavailable"' in main_activity
+        and main_activity.index("if (logo == null || text == null)")
+        < main_activity.index("logo.setBackgroundResource"),
+        "MainActivity must guard display views before sensor-driven rendering",
+        failures,
+    )
+    require(
         "printStackTrace()" not in main_activity
         and "Thread.currentThread().interrupt()" in main_activity
         and 'Log.w(TAG, "Unable to load air quality"' in main_activity,

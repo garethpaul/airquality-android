@@ -151,6 +151,10 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     }
 
     private void displayAccelerometer(SensorEvent event) {
+        if (logo == null || text == null) {
+            Log.w(TAG, "Air quality display views unavailable");
+            return;
+        }
 
         // Many sensors return 3 values, one for each axis.
         float x = event.values[0];
@@ -288,6 +292,11 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+        if (event == null || event.sensor == null || event.values == null
+                || event.values.length < 3) {
+            Log.w(TAG, "Ignoring malformed sensor event");
+            return;
+        }
 
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 

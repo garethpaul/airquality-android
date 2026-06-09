@@ -2,6 +2,10 @@
 
 ## 2026-06-09
 
+1. Guarded malformed accelerometer events and missing display views before
+   sensor-driven rendering.
+2. Added static checker coverage for sensor event and display-view guards.
+
 1. Guarded `MainActivity` accelerometer listener registration and cleanup when
    the sensor service or accelerometer is unavailable.
 2. Added static checker coverage for the accelerometer lifecycle guard.

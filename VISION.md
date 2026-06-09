@@ -28,6 +28,7 @@ Priority:
   rendering
 - Keep accelerometer registration guarded for devices or layouts without an
   available sensor service
+- Keep sensor events and display views guarded before accelerometer rendering
 - Keep Twitter login activity-result handling guarded when a session already
   exists
 - Keep Twitter login callback setup guarded when layouts are stale
