@@ -2,6 +2,10 @@
 
 ## 2026-06-09
 
+1. Guarded `MainActivity` accelerometer listener registration and cleanup when
+   the sensor service or accelerometer is unavailable.
+2. Added static checker coverage for the accelerometer lifecycle guard.
+
 1. Guarded the Twitter login button lookup before setting login callbacks.
 2. Added static checker coverage for login button callback setup.
 

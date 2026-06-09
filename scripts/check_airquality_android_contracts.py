@@ -37,6 +37,7 @@ def main():
     app_build = read_text("app/build.gradle")
     application = read_text("app/src/main/java/twitterdev/airquality/AirQualityApplication.java")
     manifest = read_text("app/src/main/AndroidManifest.xml")
+    sensor_plan = read_text("docs/plans/2026-06-09-main-activity-sensor-lifecycle-guard.md")
     permissions = manifest_permissions()
 
     require(
@@ -111,6 +112,18 @@ def main():
         failures,
     )
     require(
+        "registerAccelerometerListener()" in main_activity
+        and "private void registerAccelerometerListener()" in main_activity
+        and "Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)" in main_activity
+        and "if (sensorManager == null)" in main_activity
+        and "if (accelerometer == null)" in main_activity
+        and '"Accelerometer sensor unavailable"' in main_activity
+        and "private void unregisterAccelerometerListener()" in main_activity
+        and "if (sensorManager != null)" in main_activity,
+        "MainActivity must guard accelerometer listener registration and cleanup",
+        failures,
+    )
+    require(
         "printStackTrace()" not in main_activity
         and "Thread.currentThread().interrupt()" in main_activity
         and 'Log.w(TAG, "Unable to load air quality"' in main_activity,
@@ -162,6 +175,11 @@ def main():
         and "io.fabric.tools:gradle:1.14.4" in app_build
         and "project.hasProperty('fabricApiKey')" in app_build,
         "Fabric Gradle tooling must stay pinned and opt-in",
+        failures,
+    )
+    require(
+        "Status: Completed" in sensor_plan and "make check" in sensor_plan,
+        "MainActivity sensor lifecycle plan must be completed and record make check",
         failures,
     )
 

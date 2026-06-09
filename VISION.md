@@ -26,6 +26,8 @@ Priority:
   the request
 - Keep malformed or missing air-quality responses from crashing sensor-driven
   rendering
+- Keep accelerometer registration guarded for devices or layouts without an
+  available sensor service
 - Keep Twitter login activity-result handling guarded when a session already
   exists
 - Keep Twitter login callback setup guarded when layouts are stale

@@ -77,17 +77,14 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     @Override
     protected void onResume() {
         super.onResume();
-        // register this class as a listener for the orientation and
-        // accelerometer sensors
-        sensorManager.registerListener(this,
-                sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                SensorManager.SENSOR_DELAY_NORMAL);
+        registerAccelerometerListener();
     }
+
     @Override
     protected void onPause() {
         // unregister listener
         super.onPause();
-        sensorManager.unregisterListener(this);
+        unregisterAccelerometerListener();
     }
 
     @Override
@@ -101,9 +98,6 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
 
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        sensorManager.registerListener(this,
-                sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                SensorManager.SENSOR_DELAY_NORMAL);
 
         logo = (ImageView) findViewById(R.id.imageView);
         text = (TextView) findViewById(R.id.textView);
@@ -119,6 +113,27 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
             Log.w(TAG, "Interrupted while waiting for air quality", e);
         } catch (ExecutionException e) {
             Log.w(TAG, "Unable to load air quality", e);
+        }
+    }
+
+    private void registerAccelerometerListener() {
+        if (sensorManager == null) {
+            Log.w(TAG, "Sensor manager unavailable");
+            return;
+        }
+
+        Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        if (accelerometer == null) {
+            Log.w(TAG, "Accelerometer sensor unavailable");
+            return;
+        }
+
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    private void unregisterAccelerometerListener() {
+        if (sensorManager != null) {
+            sensorManager.unregisterListener(this);
         }
     }
 
