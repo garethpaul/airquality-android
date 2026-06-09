@@ -59,6 +59,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 ## Configuration and Secrets
 
 - Detected references to Twitter. Keep API keys, OAuth credentials, tokens, and account-specific values in local configuration only.
+- `AirQualityApplication` skips Fabric/Twitter initialization while checked-in
+  credential placeholders are blank.
 - `NetworkRequest.buildUrl` trims, validates, and URL-encodes latitude and longitude before constructing the backend request.
 - `NetworkRequest.buildUrlFromParams` validates the `AsyncTask` parameter array before the background request path creates an HTTP request.
 - `NetworkRequest` applies bounded connection and socket timeouts to the HTTP client used for the backend request.
@@ -71,6 +73,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   was initialized for an unauthenticated session.
 - `LoginActivity` sets Twitter login callbacks only after confirming the login
   button exists in the active layout.
+- Local IDE metadata stays ignored so Android Studio, IntelliJ, and VS Code
+  workspace files do not become part of the shared AirQuality baseline.
 
 ## Security and Privacy Notes
 
@@ -98,6 +102,10 @@ When the required SDK or runtime is unavailable, use static checks and source re
   login button lifecycle guard.
 - See `docs/plans/2026-06-09-login-button-lookup-guard.md` for guarded Twitter
   login button callback setup.
+- See `docs/plans/2026-06-09-application-credential-initialization-guard.md`
+  for the blank credential startup guard.
+- See `docs/plans/2026-06-09-editor-metadata-ignore.md` for the local editor
+  metadata ignore baseline.
 
 ## Contributing
 

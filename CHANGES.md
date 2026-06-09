@@ -2,6 +2,13 @@
 
 ## 2026-06-09
 
+1. Skipped Fabric/Twitter initialization when the checked-in Android
+   application credentials are blank.
+2. Added static checker coverage for the application credential guard.
+
+1. Removed tracked IDE workspace metadata and added static checker coverage for
+   `.idea/`, `.vscode/`, and `*.iml` ignore rules.
+
 1. Guarded malformed accelerometer events and missing display views before
    sensor-driven rendering.
 2. Added static checker coverage for sensor event and display-view guards.

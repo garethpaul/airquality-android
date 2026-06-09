@@ -20,6 +20,7 @@ Priority:
 - Preserve the documented legacy Gradle and Android plugin toolchain
 - Keep the location-to-air-quality flow easy to inspect
 - Avoid committing local SDK paths, signing material, or Fabric/Twitter secrets
+- Skip Fabric/Twitter initialization while public credential placeholders are blank
 - Keep CircleCI and local Gradle verification aligned where the old stack allows
 - Keep background request inputs validated before network calls are attempted
 - Keep backend request timeouts wired into the HTTP client that actually executes
@@ -32,6 +33,7 @@ Priority:
 - Keep Twitter login activity-result handling guarded when a session already
   exists
 - Keep Twitter login callback setup guarded when layouts are stale
+- Keep IDE workspace metadata out of the shared Android project baseline
 
 Next priorities:
 

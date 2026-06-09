@@ -2,6 +2,7 @@
 """Static contracts for the legacy AirQuality Android project."""
 
 from pathlib import Path
+import subprocess
 import sys
 import xml.etree.ElementTree as ET
 
@@ -38,6 +39,10 @@ def main():
     application = read_text("app/src/main/java/twitterdev/airquality/AirQualityApplication.java")
     manifest = read_text("app/src/main/AndroidManifest.xml")
     sensor_plan = read_text("docs/plans/2026-06-09-main-activity-sensor-lifecycle-guard.md")
+    editor_metadata_plan = read_text("docs/plans/2026-06-09-editor-metadata-ignore.md")
+    credential_plan = read_text(
+        "docs/plans/2026-06-09-application-credential-initialization-guard.md"
+    )
     permissions = manifest_permissions()
 
     require(
@@ -188,6 +193,19 @@ def main():
         failures,
     )
     require(
+        'private static final String TAG = "AirQualityApplication"' in application
+        and "private boolean hasTwitterCredentials()" in application
+        and "TWITTER_KEY.trim().length() > 0" in application
+        and "TWITTER_SECRET.trim().length() > 0" in application
+        and "if (!hasTwitterCredentials())" in application
+        and 'Log.w(TAG, "Twitter credentials unavailable; skipping Fabric initialization")'
+        in application
+        and application.index("if (!hasTwitterCredentials())")
+        < application.index("TwitterAuthConfig authConfig"),
+        "AirQualityApplication must skip Fabric initialization when credentials are blank",
+        failures,
+    )
+    require(
         "io.fabric.tools:gradle:1.+" not in app_build
         and "io.fabric.tools:gradle:1.14.4" in app_build
         and "project.hasProperty('fabricApiKey')" in app_build,
@@ -197,6 +215,36 @@ def main():
     require(
         "Status: Completed" in sensor_plan and "make check" in sensor_plan,
         "MainActivity sensor lifecycle plan must be completed and record make check",
+        failures,
+    )
+    require(
+        "Status: Completed" in credential_plan and "make check" in credential_plan,
+        "AirQualityApplication credential guard plan must be completed and record make check",
+        failures,
+    )
+    gitignore = read_text(".gitignore")
+    for pattern in [".idea/", ".vscode/", "*.iml"]:
+        require(
+            pattern in gitignore,
+            f".gitignore must keep {pattern} out of source control",
+            failures,
+        )
+    tracked_editor_files = subprocess.run(
+        ["git", "ls-files", "--", ".idea", ".vscode", "*.iml"],
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+        check=False,
+    ).stdout.splitlines()
+    require(
+        not tracked_editor_files,
+        "IDE metadata must not be tracked: " + ", ".join(tracked_editor_files),
+        failures,
+    )
+    require(
+        "Status: Completed" in editor_metadata_plan and "make check" in editor_metadata_plan,
+        "editor metadata ignore plan must be completed and record make check",
         failures,
     )
 

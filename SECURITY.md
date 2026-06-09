@@ -33,6 +33,10 @@ Helpful reports include:
 - Review found database, model, query, or persistence-related code; changes in those areas should receive security-focused review before merge.
 - Review found infrastructure, deployment, proxy, or cloud configuration; changes in those areas should receive security-focused review before merge.
 - Dependency manifests detected: build.gradle, gradle.properties. Dependency updates should preserve lockfiles when present and avoid introducing packages without a clear maintenance reason.
+- Fabric/Twitter initialization should stay disabled when checked-in credential
+  placeholders are blank.
+- IDE workspace metadata should stay untracked so local SDK paths, launch
+  settings, and editor preferences are not committed.
 
 ## Mobile Privacy Notes
 
