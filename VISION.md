@@ -24,6 +24,8 @@ Priority:
 - Keep background request inputs validated before network calls are attempted
 - Keep backend request timeouts wired into the HTTP client that actually executes
   the request
+- Keep malformed or missing air-quality responses from crashing sensor-driven
+  rendering
 
 Next priorities:
 

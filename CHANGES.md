@@ -6,6 +6,9 @@
    Apache HTTP client used by `NetworkRequest`, and added an SDK-free static
    contract to keep the backend request bounded on hosts without Android SDK
    verification.
+2. Defaulted missing or malformed `MainActivity` air-quality responses to an
+   explicit unknown state, preserved request interruption, and guarded the
+   accelerometer display path against null `state` crashes.
 
 ## 2026-06-08
 

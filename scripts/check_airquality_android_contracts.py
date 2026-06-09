@@ -31,6 +31,7 @@ def main():
     failures = []
 
     network = read_text("app/src/main/java/twitterdev/airquality/NetworkRequest.java")
+    main_activity = read_text("app/src/main/java/twitterdev/airquality/MainActivity.java")
     network_tests = read_text("app/src/test/java/twitterdev/airquality/NetworkRequestTest.java")
     app_build = read_text("app/build.gradle")
     application = read_text("app/src/main/java/twitterdev/airquality/AirQualityApplication.java")
@@ -92,6 +93,27 @@ def main():
         and "new DefaultHttpClient(httpParams)" in network
         and "new DefaultHttpClient(p)" not in network,
         "NetworkRequest must apply request timeouts to the actual HTTP client",
+        failures,
+    )
+    require(
+        'DEFAULT_AIR_QUALITY_STATE = "Unknown"' in main_activity
+        and "readAirQualityState(JSONObject response)" in main_activity
+        and 'response.optString("air_quality", DEFAULT_AIR_QUALITY_STATE)'
+        in main_activity,
+        "MainActivity must default malformed or missing air-quality JSON safely",
+        failures,
+    )
+    require(
+        "GOOD_AIR_QUALITY_STATE.equals(state)" in main_activity
+        and "state.equals(" not in main_activity,
+        "MainActivity must compare air-quality state null-safely",
+        failures,
+    )
+    require(
+        "printStackTrace()" not in main_activity
+        and "Thread.currentThread().interrupt()" in main_activity
+        and 'Log.w(TAG, "Unable to load air quality"' in main_activity,
+        "MainActivity must log request failures without raw stack traces",
         failures,
     )
     require(

@@ -62,6 +62,7 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - `NetworkRequest.buildUrl` trims, validates, and URL-encodes latitude and longitude before constructing the backend request.
 - `NetworkRequest.buildUrlFromParams` validates the `AsyncTask` parameter array before the background request path creates an HTTP request.
 - `NetworkRequest` applies bounded connection and socket timeouts to the HTTP client used for the backend request.
+- `MainActivity` treats missing or malformed `air_quality` JSON as an explicit unknown state before accelerometer rendering.
 
 ## Security and Privacy Notes
 
@@ -80,6 +81,7 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-09-network-request-async-parameter-contracts.md` for the background request parameter-validation pass.
 - See `docs/plans/2026-06-09-network-request-timeout-contracts.md` for the HTTP timeout wiring pass.
+- See `docs/plans/2026-06-09-main-activity-air-quality-state-contracts.md` for the activity fallback-state pass.
 
 ## Contributing
 

@@ -44,7 +44,6 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -55,6 +54,9 @@ import java.util.concurrent.ExecutionException;
 
 
 public class MainActivity extends Activity implements LocationListener, SensorEventListener {
+    private static final String TAG = "MainActivity";
+    private static final String DEFAULT_AIR_QUALITY_STATE = "Unknown";
+    private static final String GOOD_AIR_QUALITY_STATE = "Good";
 
     private Context context;
     boolean isGPSEnabled = false;
@@ -68,7 +70,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     protected LocationManager locationManager;
     private SensorManager sensorManager;
     private JSONObject json;
-    private String state;
+    private String state = DEFAULT_AIR_QUALITY_STATE;
     private ImageView logo;
     private TextView text;
 
@@ -110,15 +112,27 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         request.execute(String.valueOf(latitude), String.valueOf(longitude));
         try {
             json = (JSONObject) request.get();
-            state = json.get("air_quality").toString();
+            state = readAirQualityState(json);
 
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Thread.currentThread().interrupt();
+            Log.w(TAG, "Interrupted while waiting for air quality", e);
         } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
+            Log.w(TAG, "Unable to load air quality", e);
         }
+    }
+
+    static String readAirQualityState(JSONObject response) {
+        if (response == null) {
+            return DEFAULT_AIR_QUALITY_STATE;
+        }
+
+        String airQuality = response.optString("air_quality", DEFAULT_AIR_QUALITY_STATE);
+        if (airQuality.trim().length() == 0) {
+            return DEFAULT_AIR_QUALITY_STATE;
+        }
+
+        return airQuality;
     }
 
     private void displayAccelerometer(SensorEvent event) {
@@ -128,10 +142,8 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         float y = event.values[1];
         float z = event.values[2];
 
-        String good = String.valueOf("Good");
-
         if (z < 0){
-            if (state.equals(good)) {
+            if (GOOD_AIR_QUALITY_STATE.equals(state)) {
                 getWindow().getDecorView().setBackgroundColor(Color.GREEN);
                 logo.setBackgroundResource(R.drawable.happy);
                 text.setText("Air Quality Good");
@@ -207,7 +219,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.w(TAG, "Unable to read device location", e);
         }
 
         return location;
