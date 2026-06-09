@@ -28,6 +28,7 @@ Priority:
   rendering
 - Keep Twitter login activity-result handling guarded when a session already
   exists
+- Keep Twitter login callback setup guarded when layouts are stale
 
 Next priorities:
 

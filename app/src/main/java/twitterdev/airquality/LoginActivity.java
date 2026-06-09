@@ -28,25 +28,29 @@ public class LoginActivity extends Activity {
         TwitterSession currentSession = Twitter.getSessionManager().getActiveSession();
         if (currentSession == null) {
             loginButton = (TwitterLoginButton) findViewById(R.id.twitter_login_button);
-            loginButton.setCallback(new Callback<TwitterSession>() {
-                @Override
-                public void success(Result<TwitterSession> result) {
-                    Log.v("Login", "Success");
-                    // Do something with result, which provides a TwitterSession for making API calls
-                    moveToLogin();
-                }
+            if (loginButton != null) {
+                loginButton.setCallback(new Callback<TwitterSession>() {
+                    @Override
+                    public void success(Result<TwitterSession> result) {
+                        Log.v("Login", "Success");
+                        // Do something with result, which provides a TwitterSession for making API calls
+                        moveToLogin();
+                    }
 
-                @Override
-                public void failure(TwitterException exception) {
-                    // Do something on failure
-                    Context context = getApplicationContext();
-                    CharSequence text = "Wow! Something went wrong here oops.";
-                    int duration = Toast.LENGTH_SHORT;
+                    @Override
+                    public void failure(TwitterException exception) {
+                        // Do something on failure
+                        Context context = getApplicationContext();
+                        CharSequence text = "Wow! Something went wrong here oops.";
+                        int duration = Toast.LENGTH_SHORT;
 
-                    Toast toast = Toast.makeText(context, text, duration);
-                    toast.show();
-                }
-            });
+                        Toast toast = Toast.makeText(context, text, duration);
+                        toast.show();
+                    }
+                });
+            } else {
+                Log.w("Login", "Twitter login button not found");
+            }
         } else {
             moveToLogin();
         }

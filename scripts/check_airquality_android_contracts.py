@@ -118,10 +118,25 @@ def main():
         failures,
     )
     require(
-        "if (loginButton != null)" in login_activity
-        and "loginButton.onActivityResult(requestCode, resultCode, data)" in login_activity
+        login_activity.count("if (loginButton != null)") >= 2
         and login_activity.index("if (loginButton != null)")
-        < login_activity.index("loginButton.onActivityResult(requestCode, resultCode, data)"),
+        < login_activity.index("loginButton.setCallback")
+        and 'Log.w("Login", "Twitter login button not found")' in login_activity,
+        "LoginActivity must guard the Twitter login button before setting callbacks",
+        failures,
+    )
+    result_method_start = login_activity.find("protected void onActivityResult")
+    require(
+        result_method_start >= 0,
+        "LoginActivity must keep an onActivityResult override",
+        failures,
+    )
+    result_method = login_activity[result_method_start:] if result_method_start >= 0 else ""
+    require(
+        "if (loginButton != null)" in result_method
+        and "loginButton.onActivityResult(requestCode, resultCode, data)" in result_method
+        and result_method.index("if (loginButton != null)")
+        < result_method.index("loginButton.onActivityResult(requestCode, resultCode, data)"),
         "LoginActivity must guard loginButton before forwarding activity results",
         failures,
     )

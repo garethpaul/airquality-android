@@ -2,6 +2,9 @@
 
 ## 2026-06-09
 
+1. Guarded the Twitter login button lookup before setting login callbacks.
+2. Added static checker coverage for login button callback setup.
+
 1. Guarded `LoginActivity.onActivityResult` so already-authenticated sessions
    do not dereference an uninitialized Twitter login button.
 2. Added static checker coverage for the login button lifecycle guard.

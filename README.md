@@ -65,6 +65,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - `MainActivity` treats missing or malformed `air_quality` JSON as an explicit unknown state before accelerometer rendering.
 - `LoginActivity` forwards Twitter activity results only when a login button
   was initialized for an unauthenticated session.
+- `LoginActivity` sets Twitter login callbacks only after confirming the login
+  button exists in the active layout.
 
 ## Security and Privacy Notes
 
@@ -86,6 +88,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - See `docs/plans/2026-06-09-main-activity-air-quality-state-contracts.md` for the activity fallback-state pass.
 - See `docs/plans/2026-06-09-login-activity-result-guard.md` for the Twitter
   login button lifecycle guard.
+- See `docs/plans/2026-06-09-login-button-lookup-guard.md` for guarded Twitter
+  login button callback setup.
 
 ## Contributing
 
