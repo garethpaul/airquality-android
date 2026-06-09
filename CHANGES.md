@@ -2,6 +2,9 @@
 
 ## 2026-06-09
 
+1. Disabled Android app-data backup in the checked-in manifest and added static
+   checker coverage for the opt-out.
+
 1. Skipped Fabric/Twitter initialization when the checked-in Android
    application credentials are blank.
 2. Added static checker coverage for the application credential guard.

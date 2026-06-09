@@ -35,6 +35,8 @@ Helpful reports include:
 - Dependency manifests detected: build.gradle, gradle.properties. Dependency updates should preserve lockfiles when present and avoid introducing packages without a clear maintenance reason.
 - Fabric/Twitter initialization should stay disabled when checked-in credential
   placeholders are blank.
+- Android app-data backup should stay disabled by default because this sample
+  handles location and Twitter/Fabric app state.
 - IDE workspace metadata should stay untracked so local SDK paths, launch
   settings, and editor preferences are not committed.
 

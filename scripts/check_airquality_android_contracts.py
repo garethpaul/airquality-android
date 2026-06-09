@@ -40,6 +40,7 @@ def main():
     manifest = read_text("app/src/main/AndroidManifest.xml")
     sensor_plan = read_text("docs/plans/2026-06-09-main-activity-sensor-lifecycle-guard.md")
     editor_metadata_plan = read_text("docs/plans/2026-06-09-editor-metadata-ignore.md")
+    backup_plan = read_text("docs/plans/2026-06-09-android-backup-opt-out.md")
     credential_plan = read_text(
         "docs/plans/2026-06-09-application-credential-initialization-guard.md"
     )
@@ -188,6 +189,12 @@ def main():
         failures,
     )
     require(
+        'android:allowBackup="false"' in manifest
+        and 'android:allowBackup="true"' not in manifest,
+        "AndroidManifest must explicitly disable app-data backup",
+        failures,
+    )
+    require(
         'TWITTER_KEY = ""' in application and 'TWITTER_SECRET = ""' in application,
         "Twitter credentials must remain empty in checked-in source",
         failures,
@@ -245,6 +252,11 @@ def main():
     require(
         "Status: Completed" in editor_metadata_plan and "make check" in editor_metadata_plan,
         "editor metadata ignore plan must be completed and record make check",
+        failures,
+    )
+    require(
+        "Status: Completed" in backup_plan and "make check" in backup_plan,
+        "Android backup opt-out plan must be completed and record make check",
         failures,
     )
 

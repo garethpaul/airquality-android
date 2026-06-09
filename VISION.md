@@ -20,6 +20,7 @@ Priority:
 - Preserve the documented legacy Gradle and Android plugin toolchain
 - Keep the location-to-air-quality flow easy to inspect
 - Avoid committing local SDK paths, signing material, or Fabric/Twitter secrets
+- Keep Android app-data backup disabled by default for the legacy sample
 - Skip Fabric/Twitter initialization while public credential placeholders are blank
 - Keep CircleCI and local Gradle verification aligned where the old stack allows
 - Keep background request inputs validated before network calls are attempted
@@ -49,6 +50,7 @@ Contribution rules:
 - Run `./gradlew tasks --no-daemon`, `./gradlew assembleDebug --no-daemon`, and
   `./gradlew test --no-daemon` with a compatible SDK before pushing code changes.
 - Document any required local SDK or credential setup in `README.md`.
+- Preserve Android backup opt-out when changing the manifest.
 - Do not remove legacy compatibility accidentally while updating dependencies.
 
 ## Security And Privacy

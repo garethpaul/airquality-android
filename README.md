@@ -106,6 +106,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   for the blank credential startup guard.
 - See `docs/plans/2026-06-09-editor-metadata-ignore.md` for the local editor
   metadata ignore baseline.
+- See `docs/plans/2026-06-09-android-backup-opt-out.md` for the app-data
+  backup opt-out baseline.
 
 ## Contributing
 
