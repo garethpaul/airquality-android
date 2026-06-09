@@ -65,6 +65,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - `NetworkRequest.buildUrlFromParams` validates the `AsyncTask` parameter array before the background request path creates an HTTP request.
 - `NetworkRequest` applies bounded connection and socket timeouts to the HTTP client used for the backend request.
 - `MainActivity` treats missing or malformed `air_quality` JSON as an explicit unknown state before accelerometer rendering.
+- `MainActivity` checks that the location service is available before reading
+  GPS or network provider state.
 - `MainActivity` registers accelerometer updates only after confirming the sensor
   manager and accelerometer are available.
 - `MainActivity` ignores malformed sensor events and missing display views
@@ -94,6 +96,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - See `docs/plans/2026-06-09-network-request-async-parameter-contracts.md` for the background request parameter-validation pass.
 - See `docs/plans/2026-06-09-network-request-timeout-contracts.md` for the HTTP timeout wiring pass.
 - See `docs/plans/2026-06-09-main-activity-air-quality-state-contracts.md` for the activity fallback-state pass.
+- See `docs/plans/2026-06-09-main-activity-location-manager-guard.md` for the
+  location service availability guard.
 - See `docs/plans/2026-06-09-main-activity-sensor-lifecycle-guard.md` for the
   accelerometer listener lifecycle guard.
 - See `docs/plans/2026-06-09-main-activity-sensor-event-guard.md` for malformed

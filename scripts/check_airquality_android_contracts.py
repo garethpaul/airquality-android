@@ -44,6 +44,9 @@ def main():
     credential_plan = read_text(
         "docs/plans/2026-06-09-application-credential-initialization-guard.md"
     )
+    location_manager_plan = read_text(
+        "docs/plans/2026-06-09-main-activity-location-manager-guard.md"
+    )
     permissions = manifest_permissions()
 
     require(
@@ -154,6 +157,14 @@ def main():
         failures,
     )
     require(
+        "if (locationManager == null)" in main_activity
+        and '"Location manager unavailable"' in main_activity
+        and main_activity.index("if (locationManager == null)")
+        < main_activity.index(".isProviderEnabled(LocationManager.GPS_PROVIDER)"),
+        "MainActivity must guard missing LocationManager before provider checks",
+        failures,
+    )
+    require(
         login_activity.count("if (loginButton != null)") >= 2
         and login_activity.index("if (loginButton != null)")
         < login_activity.index("loginButton.setCallback")
@@ -227,6 +238,12 @@ def main():
     require(
         "Status: Completed" in credential_plan and "make check" in credential_plan,
         "AirQualityApplication credential guard plan must be completed and record make check",
+        failures,
+    )
+    require(
+        "Status: Completed" in location_manager_plan
+        and "make check" in location_manager_plan,
+        "MainActivity location manager guard plan must be completed and record make check",
         failures,
     )
     gitignore = read_text(".gitignore")

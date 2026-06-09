@@ -2,6 +2,10 @@
 
 ## 2026-06-09
 
+1. Guarded `MainActivity.getLocation` when the Android location service is
+   unavailable before reading provider state.
+2. Added static checker coverage for the location manager availability guard.
+
 1. Disabled Android app-data backup in the checked-in manifest and added static
    checker coverage for the opt-out.
 

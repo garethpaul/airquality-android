@@ -185,6 +185,10 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         try {
             locationManager = (LocationManager) context
                     .getSystemService(LOCATION_SERVICE);
+            if (locationManager == null) {
+                Log.w(TAG, "Location manager unavailable");
+                return location;
+            }
 
             // getting GPS status
             isGPSEnabled = locationManager
