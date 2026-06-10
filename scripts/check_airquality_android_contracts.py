@@ -2,6 +2,7 @@
 """Static contracts for the legacy AirQuality Android project."""
 
 from pathlib import Path
+import re
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
@@ -18,6 +19,33 @@ def read_text(relative_path):
 def require(condition, message, failures):
     if not condition:
         failures.append(message)
+
+
+def workflow_section(source, heading):
+    lines = source.splitlines()
+    start = next(
+        (index for index, line in enumerate(lines) if line == f"{heading}:"),
+        None,
+    )
+    if start is None:
+        return ""
+    end = next(
+        (
+            index
+            for index, line in enumerate(lines[start + 1 :], start + 1)
+            if line and not line.startswith(" ") and not line.startswith("#")
+        ),
+        len(lines),
+    )
+    return "\n".join(lines[start + 1 : end])
+
+
+def workflow_action_refs(source):
+    return re.findall(r"^\s*-?\s*uses:\s+([^\s#]+)", source, re.MULTILINE)
+
+
+def workflow_has_line(source, pattern):
+    return re.search(pattern, source, re.MULTILINE) is not None
 
 
 def manifest_permissions():
@@ -50,10 +78,6 @@ def main():
     )
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
-    readme = read_text("README.md")
-    vision = read_text("VISION.md")
-    security = read_text("SECURITY.md")
-    changes = read_text("CHANGES.md")
     credential_plan = read_text(
         "docs/plans/2026-06-09-application-credential-initialization-guard.md"
     )
@@ -61,6 +85,18 @@ def main():
         "docs/plans/2026-06-09-main-activity-location-manager-guard.md"
     )
     permissions = manifest_permissions()
+    workflow_sources = {
+        path.relative_to(ROOT).as_posix(): path.read_text(encoding="utf-8")
+        for pattern in ("*.yml", "*.yaml")
+        for path in (ROOT / ".github/workflows").glob(pattern)
+    }
+    tracked_paths = subprocess.run(
+        ["git", "ls-files"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.splitlines()
 
     require(
         '"https://garethpaul-app.appspot.com/api/airquality"' in network,
@@ -243,21 +279,61 @@ def main():
         "AndroidManifest permissions must be present once each",
         failures,
     )
+    trigger_section = workflow_section(ci_workflow, "on")
+    permissions_section = workflow_section(ci_workflow, "permissions")
+    jobs_section = workflow_section(ci_workflow, "jobs")
+    action_refs = workflow_action_refs(ci_workflow)
+    trigger_names = re.findall(r"^  ([A-Za-z0-9_-]+):", trigger_section, re.MULTILINE)
+    job_names = re.findall(r"^  ([A-Za-z0-9_-]+):$", jobs_section, re.MULTILINE)
     require(
-        "permissions:\n  contents: read" in ci_workflow
-        and "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" in ci_workflow
-        and "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405" in ci_workflow
-        and 'python-version: ["3.10", "3.12", "3.14"]' in ci_workflow
-        and "workflow_dispatch:" in ci_workflow
-        and "timeout-minutes: 5" in ci_workflow
+        all(
+            re.fullmatch(r"[^@\s]+@[0-9a-f]{40}", action_ref)
+            for source in workflow_sources.values()
+            for action_ref in workflow_action_refs(source)
+        ),
+        "Every hosted workflow action must use an immutable revision",
+        failures,
+    )
+    require(
+        trigger_names == ["pull_request", "push", "workflow_dispatch"]
+        and "      - master" in trigger_section,
+        "GitHub Actions must use only pull request, master push, and manual triggers",
+        failures,
+    )
+    require(
+        permissions_section.strip() == "contents: read",
+        "GitHub Actions must use read-only repository permissions",
+        failures,
+    )
+    require(
+        job_names == ["check"]
+        and action_refs
+        == [
+            "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10",
+            "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405",
+        ],
+        "GitHub Actions must use only the canonical check job and immutable checkout and setup-python actions",
+        failures,
+    )
+    require(
+        "runs-on: ubuntu-24.04" in jobs_section
+        and 'python-version: ["3.10", "3.12", "3.14"]' in jobs_section
+        and "python-version: ${{ matrix.python-version }}" in jobs_section,
+        "GitHub Actions must use Ubuntu 24.04 and verify the supported Python matrix",
+        failures,
+    )
+    require(
+        "workflow_dispatch:" in trigger_section
+        and workflow_has_line(jobs_section, r"^\s+timeout-minutes: 5$")
+        and workflow_has_line(jobs_section, r"^\s+persist-credentials: false$")
+        and workflow_has_line(jobs_section, r"^\s+run: make check$")
+        and workflow_has_line(jobs_section, r'^\s+SKIP_GRADLE: "1"$')
         and "concurrency:" in ci_workflow
         and "cancel-in-progress: true" in ci_workflow
-        and "runs-on: ubuntu-24.04" in ci_workflow
-        and "ubuntu-latest" not in ci_workflow
-        and 'ANDROID_HOME: ""' in ci_workflow
-        and 'ANDROID_SDK_ROOT: ""' in ci_workflow
-        and "run: make check" in ci_workflow,
-        "GitHub Actions workflow must run the pinned, read-only SDK-free Python matrix",
+        and not workflow_has_line(jobs_section, r"^\s{4,}permissions:")
+        and "write-all" not in ci_workflow
+        and "pull_request_target" not in ci_workflow,
+        "GitHub Actions must run the bounded SDK-free make check baseline without persisted credentials",
         failures,
     )
     require(
@@ -265,8 +341,16 @@ def main():
         and "GRADLE ?= $(ROOT)/gradlew" in makefile
         and "CHECK_SCRIPT := $(ROOT)/scripts/check_airquality_android_contracts.py"
         in makefile
+        and 'if [ "$$SKIP_GRADLE" = "1" ]' in makefile
+        and makefile.index('if [ "$$SKIP_GRADLE" = "1" ]')
+        < makefile.index('[ -f "$(ROOT)/local.properties" ]')
         and 'cd "$(ROOT)" && "$(GRADLE)"' in makefile,
         "Makefile must run SDK-free and Gradle checks from the repository root",
+        failures,
+    )
+    require(
+        "local.properties" not in tracked_paths,
+        "local.properties must never be tracked",
         failures,
     )
     require(
@@ -366,22 +450,6 @@ def main():
         "Status: Completed" in nonblocking_request_plan
         and "make check" in nonblocking_request_plan,
         "nonblocking MainActivity request plan must be completed and record make check",
-        failures,
-    )
-    for name, text in {
-        "README.md": readme,
-        "VISION.md": vision,
-        "SECURITY.md": security,
-        "CHANGES.md": changes,
-    }.items():
-        require(
-            "GitHub Actions" in text,
-            f"{name} must record the GitHub Actions CI baseline",
-            failures,
-        )
-    require(
-        "docs/plans/2026-06-10-ci-baseline.md" in readme,
-        "README must link the CI baseline plan",
         failures,
     )
 

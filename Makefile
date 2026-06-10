@@ -12,7 +12,9 @@ test:
 	$(PYTHON) "$(CHECK_SCRIPT)"
 
 build:
-	@if [ -n "$$ANDROID_HOME" ] || [ -f "$(ROOT)/local.properties" ]; then \
+	@if [ "$$SKIP_GRADLE" = "1" ]; then \
+		echo "SKIP_GRADLE=1; skipping Gradle build"; \
+	elif [ -n "$$ANDROID_HOME" ] || [ -f "$(ROOT)/local.properties" ]; then \
 		cd "$(ROOT)" && "$(GRADLE)" lint test assembleDebug --no-daemon; \
 	else \
 		echo "Android SDK not configured; skipping Gradle build"; \
