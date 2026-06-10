@@ -10,6 +10,8 @@
    a 1 MiB response cap, and response/connection cleanup.
 4. Pinned GitHub Actions to Ubuntu 24.04 with superseded-run cancellation and
    made SDK-free and optional Gradle checks root-independent.
+5. Removed the UI-thread wait for the air-quality `AsyncTask`; `MainActivity`
+   now applies the response when background work completes.
 
 ## 2026-06-09
 

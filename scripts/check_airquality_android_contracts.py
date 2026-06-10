@@ -45,6 +45,9 @@ def main():
     response_limit_plan = read_text(
         "docs/plans/2026-06-10-network-response-size-limit.md"
     )
+    nonblocking_request_plan = read_text(
+        "docs/plans/2026-06-10-main-activity-nonblocking-request.md"
+    )
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
     readme = read_text("README.md")
@@ -105,6 +108,13 @@ def main():
     require(
         "catch (Throwable" not in network and "Log.w(TAG" in network,
         "NetworkRequest must not silently swallow broad background request failures",
+        failures,
+    )
+    require(
+        "request.get()" not in main_activity
+        and "protected void onPostExecute(JSONObject response)" in main_activity
+        and "state = readAirQualityState(response);" in main_activity,
+        "MainActivity must update air quality from AsyncTask completion without blocking the UI thread",
         failures,
     )
     require(
@@ -190,9 +200,9 @@ def main():
     )
     require(
         "printStackTrace()" not in main_activity
-        and "Thread.currentThread().interrupt()" in main_activity
-        and 'Log.w(TAG, "Unable to load air quality"' in main_activity,
-        "MainActivity must log request failures without raw stack traces",
+        and 'Log.w(TAG, "Air quality request failed"' in network
+        and 'Log.w(TAG, "Invalid air quality response JSON"' in network,
+        "NetworkRequest must log request failures without raw stack traces",
         failures,
     )
     require(
@@ -350,6 +360,12 @@ def main():
         "Status: Completed" in response_limit_plan
         and "make check" in response_limit_plan,
         "network response size plan must be completed and record make check",
+        failures,
+    )
+    require(
+        "Status: Completed" in nonblocking_request_plan
+        and "make check" in nonblocking_request_plan,
+        "nonblocking MainActivity request plan must be completed and record make check",
         failures,
     )
     for name, text in {

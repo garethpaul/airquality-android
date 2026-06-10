@@ -50,7 +50,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 
 public class MainActivity extends Activity implements LocationListener, SensorEventListener {
@@ -69,7 +68,6 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     private static final long MIN_TIME_BETWEEN_UPDATES = 1000 * 10 * 1;
     protected LocationManager locationManager;
     private SensorManager sensorManager;
-    private JSONObject json;
     private String state = DEFAULT_AIR_QUALITY_STATE;
     private ImageView logo;
     private TextView text;
@@ -102,18 +100,13 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         logo = (ImageView) findViewById(R.id.imageView);
         text = (TextView) findViewById(R.id.textView);
 
-        NetworkRequest request = new NetworkRequest();
+        NetworkRequest request = new NetworkRequest() {
+            @Override
+            protected void onPostExecute(JSONObject response) {
+                state = readAirQualityState(response);
+            }
+        };
         request.execute(String.valueOf(latitude), String.valueOf(longitude));
-        try {
-            json = (JSONObject) request.get();
-            state = readAirQualityState(json);
-
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            Log.w(TAG, "Interrupted while waiting for air quality", e);
-        } catch (ExecutionException e) {
-            Log.w(TAG, "Unable to load air quality", e);
-        }
     }
 
     private void registerAccelerometerListener() {
