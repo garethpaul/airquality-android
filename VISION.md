@@ -26,6 +26,7 @@ Priority:
 - Keep background request inputs validated before network calls are attempted
 - Keep backend request timeouts wired into the HTTP client that actually executes
   the request
+- Bound backend response bytes and reject non-2xx responses before JSON parsing
 - Keep location service availability checked before provider state reads
 - Keep malformed or missing air-quality responses from crashing sensor-driven
   rendering

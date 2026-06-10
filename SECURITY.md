@@ -42,6 +42,8 @@ Helpful reports include:
 - Pinned, read-only GitHub Actions jobs run `make check` across Python 3.10,
   3.12, and 3.14 so Android manifest, credential, location, sensor, and network
   guardrails stay enforced before merge.
+- Backend responses must be 2xx and no larger than 1 MiB before JSON parsing;
+  response streams and the legacy HTTP connection manager must be closed.
 
 ## Mobile Privacy Notes
 

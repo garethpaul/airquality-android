@@ -5,9 +5,9 @@ import android.util.Log;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.ResponseHandler;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
@@ -15,13 +15,16 @@ import org.apache.http.params.HttpParams;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
 public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
     private static final String TAG = "NetworkRequest";
     private static final int REQUEST_TIMEOUT_MILLIS = 1000;
+    private static final int RESPONSE_MAX_BYTES = 1024 * 1024;
     private static final String AIR_QUALITY_URL =
             "https://garethpaul-app.appspot.com/api/airquality";
 
@@ -78,6 +81,39 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
         }
     }
 
+    static String readResponseBody(HttpResponse response) throws IOException {
+        int statusCode = response.getStatusLine().getStatusCode();
+        if (statusCode < 200 || statusCode >= 300) {
+            throw new ClientProtocolException("Unexpected HTTP status");
+        }
+
+        HttpEntity entity = response.getEntity();
+        if (entity == null) {
+            throw new IOException("Air quality response body is missing");
+        }
+        if (entity.getContentLength() > RESPONSE_MAX_BYTES) {
+            throw new IOException("Air quality response is too large");
+        }
+
+        InputStream input = entity.getContent();
+        try {
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            byte[] buffer = new byte[4096];
+            int totalBytes = 0;
+            int bytesRead;
+            while ((bytesRead = input.read(buffer)) != -1) {
+                totalBytes += bytesRead;
+                if (totalBytes > RESPONSE_MAX_BYTES) {
+                    throw new IOException("Air quality response is too large");
+                }
+                output.write(buffer, 0, bytesRead);
+            }
+            return output.toString("UTF-8");
+        } finally {
+            input.close();
+        }
+    }
+
     @Override
     protected JSONObject doInBackground(String... params) {
         try {
@@ -94,9 +130,8 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
 
             try {
                 //Log.i(getClass().getSimpleName(), "send  task - start");
-                ResponseHandler<String> responseHandler = new BasicResponseHandler();
-                String responseBody = httpclient.execute(httpget,
-                        responseHandler);
+                HttpResponse response = httpclient.execute(httpget);
+                String responseBody = readResponseBody(response);
                 JSONObject json = new JSONObject(responseBody);
                 return json;
 
@@ -107,6 +142,8 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
                 Log.w(TAG, "Air quality request failed", e);
             } catch (JSONException e) {
                 Log.w(TAG, "Invalid air quality response JSON", e);
+            } finally {
+                httpclient.getConnectionManager().shutdown();
             }
 
 

@@ -1,17 +1,19 @@
 PYTHON ?= python3
-GRADLE ?= ./gradlew
+ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+GRADLE ?= $(ROOT)/gradlew
+CHECK_SCRIPT := $(ROOT)/scripts/check_airquality_android_contracts.py
 
 .PHONY: lint test build verify check
 
 lint:
-	$(PYTHON) -m py_compile scripts/check_airquality_android_contracts.py
+	$(PYTHON) -m py_compile "$(CHECK_SCRIPT)"
 
 test:
-	$(PYTHON) scripts/check_airquality_android_contracts.py
+	$(PYTHON) "$(CHECK_SCRIPT)"
 
 build:
-	@if [ -n "$$ANDROID_HOME" ] || [ -f local.properties ]; then \
-		$(GRADLE) lint test assembleDebug --no-daemon; \
+	@if [ -n "$$ANDROID_HOME" ] || [ -f "$(ROOT)/local.properties" ]; then \
+		cd "$(ROOT)" && "$(GRADLE)" lint test assembleDebug --no-daemon; \
 	else \
 		echo "Android SDK not configured; skipping Gradle build"; \
 	fi

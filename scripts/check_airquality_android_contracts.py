@@ -42,7 +42,11 @@ def main():
     editor_metadata_plan = read_text("docs/plans/2026-06-09-editor-metadata-ignore.md")
     backup_plan = read_text("docs/plans/2026-06-09-android-backup-opt-out.md")
     ci_plan = read_text("docs/plans/2026-06-10-ci-baseline.md")
+    response_limit_plan = read_text(
+        "docs/plans/2026-06-10-network-response-size-limit.md"
+    )
     ci_workflow = read_text(".github/workflows/check.yml")
+    makefile = read_text("Makefile")
     readme = read_text("README.md")
     vision = read_text("VISION.md")
     security = read_text("SECURITY.md")
@@ -110,6 +114,35 @@ def main():
         and "new DefaultHttpClient(httpParams)" in network
         and "new DefaultHttpClient(p)" not in network,
         "NetworkRequest must apply request timeouts to the actual HTTP client",
+        failures,
+    )
+    require(
+        "private static final int RESPONSE_MAX_BYTES = 1024 * 1024;" in network,
+        "NetworkRequest must cap backend responses at 1 MiB",
+        failures,
+    )
+    require(
+        "statusCode < 200 || statusCode >= 300" in network
+        and 'throw new ClientProtocolException("Unexpected HTTP status")' in network,
+        "NetworkRequest must reject non-2xx backend responses",
+        failures,
+    )
+    require(
+        "entity.getContentLength() > RESPONSE_MAX_BYTES" in network
+        and "totalBytes > RESPONSE_MAX_BYTES" in network,
+        "NetworkRequest must enforce declared and streamed response size limits",
+        failures,
+    )
+    require(
+        'return output.toString("UTF-8")' in network
+        and "input.close()" in network
+        and "httpclient.getConnectionManager().shutdown()" in network,
+        "NetworkRequest must close response and connection resources after bounded UTF-8 decoding",
+        failures,
+    )
+    require(
+        "BasicResponseHandler" not in network and "ResponseHandler<String>" not in network,
+        "NetworkRequest must not use an unbounded basic response handler",
         failures,
     )
     require(
@@ -207,10 +240,23 @@ def main():
         and 'python-version: ["3.10", "3.12", "3.14"]' in ci_workflow
         and "workflow_dispatch:" in ci_workflow
         and "timeout-minutes: 5" in ci_workflow
+        and "concurrency:" in ci_workflow
+        and "cancel-in-progress: true" in ci_workflow
+        and "runs-on: ubuntu-24.04" in ci_workflow
+        and "ubuntu-latest" not in ci_workflow
         and 'ANDROID_HOME: ""' in ci_workflow
         and 'ANDROID_SDK_ROOT: ""' in ci_workflow
         and "run: make check" in ci_workflow,
         "GitHub Actions workflow must run the pinned, read-only SDK-free Python matrix",
+        failures,
+    )
+    require(
+        "ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))" in makefile
+        and "GRADLE ?= $(ROOT)/gradlew" in makefile
+        and "CHECK_SCRIPT := $(ROOT)/scripts/check_airquality_android_contracts.py"
+        in makefile
+        and 'cd "$(ROOT)" && "$(GRADLE)"' in makefile,
+        "Makefile must run SDK-free and Gradle checks from the repository root",
         failures,
     )
     require(
@@ -298,6 +344,12 @@ def main():
     require(
         "Status: Completed" in ci_plan and "make check" in ci_plan,
         "CI baseline plan must be completed and record make check",
+        failures,
+    )
+    require(
+        "Status: Completed" in response_limit_plan
+        and "make check" in response_limit_plan,
+        "network response size plan must be completed and record make check",
         failures,
     )
     for name, text in {

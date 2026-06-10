@@ -54,8 +54,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - `make check` - run SDK-free static contracts and skip Gradle when no Android SDK is configured
 - `./gradlew test` or Android Studio's test runner when the SDK is configured
 - GitHub Actions runs the SDK-free `make check` baseline on Python 3.10, 3.12,
-  and 3.14 for pushes, pull requests, and manual maintenance runs. The workflow
-  remains separate from the legacy Gradle/Fabric toolchain migration.
+  and 3.14 on fixed Ubuntu 24.04 runners for pushes, pull requests, and manual
+  maintenance runs. Superseded branch runs are cancelled. The workflow remains
+  separate from the legacy Gradle/Fabric toolchain migration.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -67,6 +68,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - `NetworkRequest.buildUrl` trims, validates, and URL-encodes latitude and longitude before constructing the backend request.
 - `NetworkRequest.buildUrlFromParams` validates the `AsyncTask` parameter array before the background request path creates an HTTP request.
 - `NetworkRequest` applies bounded connection and socket timeouts to the HTTP client used for the backend request.
+- `NetworkRequest` accepts only 2xx responses, reads at most 1 MiB, and closes
+  response and connection resources before JSON handling.
 - `MainActivity` treats missing or malformed `air_quality` JSON as an explicit unknown state before accelerometer rendering.
 - `MainActivity` checks that the location service is available before reading
   GPS or network provider state.
@@ -117,6 +120,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   backup opt-out baseline.
 - See `docs/plans/2026-06-10-ci-baseline.md` for the hosted GitHub Actions
   baseline.
+- See `docs/plans/2026-06-10-network-response-size-limit.md` for bounded backend
+  response handling and root-independent verification.
 
 ## Contributing
 

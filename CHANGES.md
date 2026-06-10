@@ -6,6 +6,10 @@
    `make check` baseline on Python 3.10, 3.12, and 3.14.
 2. Extended the Android contract checker and docs to require the hosted CI
    verification path.
+3. Replaced unbounded `BasicResponseHandler` usage with explicit 2xx validation,
+   a 1 MiB response cap, and response/connection cleanup.
+4. Pinned GitHub Actions to Ubuntu 24.04 with superseded-run cancellation and
+   made SDK-free and optional Gradle checks root-independent.
 
 ## 2026-06-09
 
