@@ -53,6 +53,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 - `make check` - run SDK-free static contracts and skip Gradle when no Android SDK is configured
 - `./gradlew test` or Android Studio's test runner when the SDK is configured
+- GitHub Actions runs the SDK-free `make check` baseline on Python 3.10, 3.12,
+  and 3.14 for pushes, pull requests, and manual maintenance runs. The workflow
+  remains separate from the legacy Gradle/Fabric toolchain migration.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -112,6 +115,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   metadata ignore baseline.
 - See `docs/plans/2026-06-09-android-backup-opt-out.md` for the app-data
   backup opt-out baseline.
+- See `docs/plans/2026-06-10-ci-baseline.md` for the hosted GitHub Actions
+  baseline.
 
 ## Contributing
 

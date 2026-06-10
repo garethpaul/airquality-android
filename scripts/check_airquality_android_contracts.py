@@ -41,6 +41,12 @@ def main():
     sensor_plan = read_text("docs/plans/2026-06-09-main-activity-sensor-lifecycle-guard.md")
     editor_metadata_plan = read_text("docs/plans/2026-06-09-editor-metadata-ignore.md")
     backup_plan = read_text("docs/plans/2026-06-09-android-backup-opt-out.md")
+    ci_plan = read_text("docs/plans/2026-06-10-ci-baseline.md")
+    ci_workflow = read_text(".github/workflows/check.yml")
+    readme = read_text("README.md")
+    vision = read_text("VISION.md")
+    security = read_text("SECURITY.md")
+    changes = read_text("CHANGES.md")
     credential_plan = read_text(
         "docs/plans/2026-06-09-application-credential-initialization-guard.md"
     )
@@ -195,6 +201,19 @@ def main():
         failures,
     )
     require(
+        "permissions:\n  contents: read" in ci_workflow
+        and "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" in ci_workflow
+        and "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405" in ci_workflow
+        and 'python-version: ["3.10", "3.12", "3.14"]' in ci_workflow
+        and "workflow_dispatch:" in ci_workflow
+        and "timeout-minutes: 5" in ci_workflow
+        and 'ANDROID_HOME: ""' in ci_workflow
+        and 'ANDROID_SDK_ROOT: ""' in ci_workflow
+        and "run: make check" in ci_workflow,
+        "GitHub Actions workflow must run the pinned, read-only SDK-free Python matrix",
+        failures,
+    )
+    require(
         'android:value=""' in manifest,
         "Fabric API key must remain empty in the checked-in manifest",
         failures,
@@ -274,6 +293,27 @@ def main():
     require(
         "Status: Completed" in backup_plan and "make check" in backup_plan,
         "Android backup opt-out plan must be completed and record make check",
+        failures,
+    )
+    require(
+        "Status: Completed" in ci_plan and "make check" in ci_plan,
+        "CI baseline plan must be completed and record make check",
+        failures,
+    )
+    for name, text in {
+        "README.md": readme,
+        "VISION.md": vision,
+        "SECURITY.md": security,
+        "CHANGES.md": changes,
+    }.items():
+        require(
+            "GitHub Actions" in text,
+            f"{name} must record the GitHub Actions CI baseline",
+            failures,
+        )
+    require(
+        "docs/plans/2026-06-10-ci-baseline.md" in readme,
+        "README must link the CI baseline plan",
         failures,
     )
 

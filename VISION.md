@@ -36,6 +36,7 @@ Priority:
   exists
 - Keep Twitter login callback setup guarded when layouts are stale
 - Keep IDE workspace metadata out of the shared Android project baseline
+- Keep GitHub Actions aligned with the SDK-free Python `make check` baseline
 
 Next priorities:
 
@@ -53,6 +54,8 @@ Contribution rules:
 - Document any required local SDK or credential setup in `README.md`.
 - Preserve Android backup opt-out when changing the manifest.
 - Do not remove legacy compatibility accidentally while updating dependencies.
+- Keep `.github/workflows/check.yml` in sync with the local static and Gradle
+  verification gates.
 
 ## Security And Privacy
 

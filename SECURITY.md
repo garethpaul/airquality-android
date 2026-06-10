@@ -39,6 +39,9 @@ Helpful reports include:
   handles location and Twitter/Fabric app state.
 - IDE workspace metadata should stay untracked so local SDK paths, launch
   settings, and editor preferences are not committed.
+- Pinned, read-only GitHub Actions jobs run `make check` across Python 3.10,
+  3.12, and 3.14 so Android manifest, credential, location, sensor, and network
+  guardrails stay enforced before merge.
 
 ## Mobile Privacy Notes
 

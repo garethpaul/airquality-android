@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-06-10
+
+1. Added a pinned, read-only GitHub Actions workflow that runs the SDK-free
+   `make check` baseline on Python 3.10, 3.12, and 3.14.
+2. Extended the Android contract checker and docs to require the hosted CI
+   verification path.
+
 ## 2026-06-09
 
 1. Guarded `MainActivity.getLocation` when the Android location service is
