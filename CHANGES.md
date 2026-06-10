@@ -12,6 +12,9 @@
    made SDK-free and optional Gradle checks root-independent.
 5. Removed the UI-thread wait for the air-quality `AsyncTask`; `MainActivity`
    now applies the response when background work completes.
+6. Disabled persisted checkout credentials, made SDK-free CI explicit through
+   `SKIP_GRADLE`, required immutable actions across hosted workflows, rejected
+   tracked local SDK paths, and added code ownership for policy files.
 
 ## 2026-06-09
 

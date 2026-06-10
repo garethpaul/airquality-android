@@ -3,6 +3,11 @@
 <!-- README-OVERVIEW-IMAGE -->
 ![Project overview](docs/readme-overview.svg)
 
+## Device Preview
+
+<!-- DEVICE-PREVIEW-IMAGE -->
+![Device preview](docs/device-preview.svg)
+
 ## Overview
 
 `garethpaul/airquality-android` is an Android application or sample. AirQuality App for Android
@@ -55,8 +60,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - `./gradlew test` or Android Studio's test runner when the SDK is configured
 - GitHub Actions runs the SDK-free `make check` baseline on Python 3.10, 3.12,
   and 3.14 on fixed Ubuntu 24.04 runners for pushes, pull requests, and manual
-  maintenance runs. Superseded branch runs are cancelled. The workflow remains
-  separate from the legacy Gradle/Fabric toolchain migration.
+  maintenance runs. Superseded branch runs are cancelled, checkout credentials
+  are not persisted, and the workflow explicitly skips legacy Gradle probing.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 

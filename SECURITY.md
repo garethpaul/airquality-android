@@ -41,7 +41,10 @@ Helpful reports include:
   settings, and editor preferences are not committed.
 - Pinned, read-only GitHub Actions jobs run `make check` across Python 3.10,
   3.12, and 3.14 so Android manifest, credential, location, sensor, and network
-  guardrails stay enforced before merge.
+  regressions are visible during review and after direct pushes. Repository
+  rules determine whether those checks are mandatory before merge.
+- Hosted checkout credentials are not persisted, and CODEOWNERS identifies the
+  workflow, Makefile, and contract checker as policy-sensitive paths.
 - Backend responses must be 2xx and no larger than 1 MiB before JSON parsing;
   response streams and the legacy HTTP connection manager must be closed.
 
