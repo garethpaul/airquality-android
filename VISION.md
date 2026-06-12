@@ -27,6 +27,8 @@ Priority:
 - Keep backend request timeouts wired into the HTTP client that actually executes
   the request
 - Bound backend response bytes and reject non-2xx responses before JSON parsing
+- Cancel activity-owned backend requests during teardown and ignore stale
+  completion callbacks
 - Keep location service availability checked before provider state reads
 - Keep malformed or missing air-quality responses from crashing sensor-driven
   rendering
@@ -38,10 +40,13 @@ Priority:
 - Keep Twitter login callback setup guarded when layouts are stale
 - Keep IDE workspace metadata out of the shared Android project baseline
 - Keep GitHub Actions aligned with the SDK-free Python `make check` baseline
+- Keep the legacy Gradle runtime behind a checksum-verified generated wrapper
+- Keep a separate hosted Java 8/API 22 job for complete Android verification
 
 Next priorities:
 
-- Migrate Gradle, the Android Gradle Plugin, and SDK levels in a dedicated pass
+- Evaluate Gradle runtime, Android plugin, and SDK modernization together in a
+  dedicated compatibility pass; wrapper hardening is separate
 - Replace deprecated Fabric/Twitter login dependencies with maintained options
 - Move synchronous networking and Apache HTTP usage to modern Android APIs
 - Add tests around URL construction, location handling, and failure states

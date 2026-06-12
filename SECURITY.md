@@ -42,14 +42,25 @@ Helpful reports include:
 - Pinned, read-only GitHub Actions jobs run `make check` across Python 3.10,
   3.12, and 3.14 so Android manifest, credential, location, sensor, and network
   guardrails stay enforced before merge.
+- A separate hosted Java 8/API 22 job runs the complete Android gate, and the
+  baseline pins and verifies the wrapper JAR and Gradle distribution checksums.
+  An uncached bootstrap still depends on Gradle's HTTPS service.
 - Backend responses must be 2xx and no larger than 1 MiB before JSON parsing;
   response streams and the legacy HTTP connection manager must be closed.
+- `MainActivity` must cancel its active backend request during destruction and
+  ignore callbacks from stale, cancelled, finishing, or destroyed activity
+  instances.
 
 ## Mobile Privacy Notes
 
 If this project requests device permissions such as location, camera, microphone, contacts, Bluetooth, health data, or local storage access, reports should describe the permission involved and whether sensitive data can be accessed, persisted, or transmitted unexpectedly. Please avoid testing against real third-party user data or accounts you do not control.
 
 ## Dependency and Supply Chain Security
+
+The generated Gradle 8.14.5 bootstrap retains the legacy Gradle 2.2.1 runtime
+required by Android Gradle Plugin 1.2.3. Review all four wrapper files together;
+the SDK-free baseline rejects drift from Gradle's published wrapper JAR and
+distribution SHA-256 values.
 
 Dependency updates should come from trusted package managers and should keep lockfiles in sync when lockfiles exist. Do not commit credentials, private keys, tokens, generated secrets, or machine-local configuration. If a vulnerability depends on a compromised package, typosquatting risk, insecure transitive dependency, or unsafe build step, include the package name, affected version, and the path through which it is used.
 

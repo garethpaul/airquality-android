@@ -1,5 +1,15 @@
 # Changes
 
+## 2026-06-12
+
+1. Regenerated the Gradle wrapper bootstrap with official Gradle 8.14.5
+   tooling while retaining the Gradle 2.2.1 Android runtime.
+2. Pinned Gradle's official distribution checksum, added exact wrapper
+   contracts, and added a separate hosted Java 8/API 22 Android gate.
+3. Retained the active `NetworkRequest`, ignored stale or teardown-time
+   callbacks, and cancelled the task when `MainActivity` is destroyed.
+4. Added SDK-free lifecycle contracts and a completed implementation plan.
+
 ## 2026-06-10
 
 1. Added a pinned, read-only GitHub Actions workflow that runs the SDK-free
