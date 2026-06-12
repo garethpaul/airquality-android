@@ -22,9 +22,12 @@ the screen is finishing or already destroyed.
 
 ## Verification
 
-- `make lint`
-- `make test`
-- `make build`
-- `make check`
-- Static mutation checks for callback guards and `onDestroy` cancellation
-- `git diff --check`
+- `make check` passed with Amazon Corretto 8 and the configured Android SDK.
+  Gradle compiled debug and release Java sources, ran all six unit tests for
+  both variants, ran Android lint, and assembled the debug APK.
+- Android lint completed with no errors and one existing `OldTargetApi`
+  warning for the intentionally preserved API 22 compatibility baseline.
+- The SDK-free contract checker passed on Python 3 and rejected mutations that
+  removed the callback identity guard, teardown-state guard, request
+  cancellation, or completed-plan evidence.
+- `git diff --check` passed.
