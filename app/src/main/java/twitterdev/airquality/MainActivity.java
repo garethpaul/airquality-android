@@ -71,6 +71,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     private String state = DEFAULT_AIR_QUALITY_STATE;
     private ImageView logo;
     private TextView text;
+    private NetworkRequest airQualityRequest;
 
     @Override
     protected void onResume() {
@@ -100,13 +101,29 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         logo = (ImageView) findViewById(R.id.imageView);
         text = (TextView) findViewById(R.id.textView);
 
-        NetworkRequest request = new NetworkRequest() {
+        airQualityRequest = new NetworkRequest() {
             @Override
             protected void onPostExecute(JSONObject response) {
+                if (airQualityRequest != this) {
+                    return;
+                }
+                airQualityRequest = null;
+                if (isCancelled() || isFinishing() || isDestroyed()) {
+                    return;
+                }
                 state = readAirQualityState(response);
             }
         };
-        request.execute(String.valueOf(latitude), String.valueOf(longitude));
+        airQualityRequest.execute(String.valueOf(latitude), String.valueOf(longitude));
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (airQualityRequest != null) {
+            airQualityRequest.cancel(true);
+            airQualityRequest = null;
+        }
+        super.onDestroy();
     }
 
     private void registerAccelerometerListener() {

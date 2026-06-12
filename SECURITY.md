@@ -44,6 +44,9 @@ Helpful reports include:
   guardrails stay enforced before merge.
 - Backend responses must be 2xx and no larger than 1 MiB before JSON parsing;
   response streams and the legacy HTTP connection manager must be closed.
+- `MainActivity` must cancel its active backend request during destruction and
+  ignore callbacks from stale, cancelled, finishing, or destroyed activity
+  instances.
 
 ## Mobile Privacy Notes
 
