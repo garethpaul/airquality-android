@@ -117,5 +117,11 @@ the new hosted Android job plus CodeQL to pass on the final exact head.
 
 ## Hosted Verification
 
-Hosted pull-request and CodeQL evidence will be recorded after the exact
-implementation head completes the Python matrix, Android job, and analyzers.
+- On implementation head `6b5a6fbca8bdbd1455a5763bc468c91d3b28729b`,
+  pull-request `Check` run `27440457696` passed the Python 3.10, 3.12, and
+  3.14 matrix plus the Java 8/API 22 Android job.
+- CodeQL run `27440455310` passed the actions, Python, and java-kotlin analyzers
+  on the same implementation head.
+- PR #5 was open and mergeable at that head, with branch protection correctly
+  requiring review. The final evidence-only commit must rerun all seven jobs
+  before tracker reconciliation.

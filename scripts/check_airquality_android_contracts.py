@@ -503,7 +503,10 @@ def main():
         and "incorrect checksum was rejected" in wrapper_plan
         and "SDK-backed `make check` passed" in wrapper_plan
         and "external working directory" in wrapper_plan
-        and "hostile mutations rejected" in wrapper_plan,
+        and "hostile mutations rejected" in wrapper_plan
+        and "pull-request `Check` run `27440457696` passed" in wrapper_plan
+        and "CodeQL run `27440455310` passed" in wrapper_plan
+        and "6b5a6fbca8bdbd1455a5763bc468c91d3b28729b" in wrapper_plan,
         "Gradle wrapper plan must record completed local verification evidence",
         failures,
     )
