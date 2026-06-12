@@ -38,6 +38,12 @@ Additional scan context:
 
 ### Setup
 
+The generated wrapper still executes Gradle 2.2.1 for compatibility. It uses
+`distributionSha256Sum` to authenticate the downloaded distribution, while the
+SDK-free contracts verify the checked-in wrapper JAR and launchers. This does
+not make an uncached build offline-reproducible; the first build still needs
+Gradle's HTTPS distribution service.
+
 ```bash
 git clone https://github.com/garethpaul/airquality-android.git
 cd airquality-android
@@ -53,10 +59,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 - `make check` - run SDK-free static contracts and skip Gradle when no Android SDK is configured
 - `./gradlew test` or Android Studio's test runner when the SDK is configured
-- GitHub Actions runs the SDK-free `make check` baseline on Python 3.10, 3.12,
-  and 3.14 on fixed Ubuntu 24.04 runners for pushes, pull requests, and manual
-  maintenance runs. Superseded branch runs are cancelled. The workflow remains
-  separate from the legacy Gradle/Fabric toolchain migration.
+- GitHub Actions preserves the SDK-free `make check` baseline on Python 3.10,
+  3.12, and 3.14 and runs a separate Java 8/API 22 Android gate on fixed Ubuntu
+  24.04 runners. Superseded branch runs are cancelled.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 

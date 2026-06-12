@@ -1,18 +1,91 @@
 #!/usr/bin/env python3
 """Static contracts for the legacy AirQuality Android project."""
 
-from pathlib import Path
+import hashlib
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
 ANDROID_NS = "{http://schemas.android.com/apk/res/android}"
 
+EXPECTED_CI_WORKFLOW = """name: Check
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12", "3.14"]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run SDK-free repository verification
+        run: make check
+        env:
+          ANDROID_HOME: ""
+          ANDROID_SDK_ROOT: ""
+
+  android:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Install Android SDK packages
+        run: '\"${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager\" \"platform-tools\" \"platforms;android-22\" \"build-tools;24.0.3\"'
+      - name: Set up Java 8
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          distribution: corretto
+          java-version: "8"
+      - name: Run full Android verification
+        run: make check
+"""
+
+EXPECTED_WRAPPER_PROPERTIES = """distributionBase=GRADLE_USER_HOME
+distributionPath=wrapper/dists
+distributionSha256Sum=1d7c28b3731906fd1b2955946c1d052303881585fc14baedd675e4cf2bc1ecab
+distributionUrl=https\\://services.gradle.org/distributions/gradle-2.2.1-all.zip
+networkTimeout=10000
+validateDistributionUrl=true
+zipStoreBase=GRADLE_USER_HOME
+zipStorePath=wrapper/dists
+"""
+
 
 def read_text(relative_path):
     return (ROOT / relative_path).read_text(encoding="utf-8")
+
+
+def sha256(relative_path):
+    return hashlib.sha256((ROOT / relative_path).read_bytes()).hexdigest()
 
 
 def require(condition, message, failures):
@@ -51,6 +124,7 @@ def main():
     request_lifecycle_plan = read_text(
         "docs/plans/2026-06-12-main-activity-request-lifecycle.md"
     )
+    wrapper_plan = read_text("docs/plans/2026-06-12-gradle-wrapper-verification.md")
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
     readme = read_text("README.md")
@@ -279,20 +353,8 @@ def main():
         failures,
     )
     require(
-        "permissions:\n  contents: read" in ci_workflow
-        and "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" in ci_workflow
-        and "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405" in ci_workflow
-        and 'python-version: ["3.10", "3.12", "3.14"]' in ci_workflow
-        and "workflow_dispatch:" in ci_workflow
-        and "timeout-minutes: 5" in ci_workflow
-        and "concurrency:" in ci_workflow
-        and "cancel-in-progress: true" in ci_workflow
-        and "runs-on: ubuntu-24.04" in ci_workflow
-        and "ubuntu-latest" not in ci_workflow
-        and 'ANDROID_HOME: ""' in ci_workflow
-        and 'ANDROID_SDK_ROOT: ""' in ci_workflow
-        and "run: make check" in ci_workflow,
-        "GitHub Actions workflow must run the pinned, read-only SDK-free Python matrix",
+        ci_workflow == EXPECTED_CI_WORKFLOW,
+        "GitHub Actions workflow must preserve the SDK-free matrix and exact hosted Android gate",
         failures,
     )
     require(
@@ -407,6 +469,49 @@ def main():
         "Status: Completed" in request_lifecycle_plan
         and "make check" in request_lifecycle_plan,
         "MainActivity request lifecycle plan must be completed and record make check",
+        failures,
+    )
+    require(
+        read_text("gradle/wrapper/gradle-wrapper.properties")
+        == EXPECTED_WRAPPER_PROPERTIES,
+        "Gradle wrapper properties must retain the reviewed Gradle 2.2.1 URL and checksum",
+        failures,
+    )
+    require(
+        sha256("gradle/wrapper/gradle-wrapper.jar")
+        == "7d3a4ac4de1c32b59bc6a4eb8ecb8e612ccd0cf1ae1e99f66902da64df296172",
+        "Gradle wrapper JAR must match Gradle's published 8.14.5 wrapper checksum",
+        failures,
+    )
+    require(
+        sha256("gradlew")
+        == "b187b4c52e749f5760afdd6fadc31b2a98ad35fb249bf0dff03b72650f320409"
+        and sha256("gradlew.bat")
+        == "94102713eb8fb22d032397924c0f38ab2da783ba60d07054339f1190a0c4e2cd",
+        "Gradle wrapper launchers must match the reviewed generated scripts",
+        failures,
+    )
+    require(
+        "Gradle start up script for POSIX generated by Gradle." in read_text("gradlew")
+        and "Gradle startup script for Windows" in read_text("gradlew.bat"),
+        "Gradle wrapper launchers must retain generated provenance markers",
+        failures,
+    )
+    require(
+        "status: completed" in wrapper_plan
+        and "fresh temporary Gradle user home" in wrapper_plan
+        and "incorrect checksum was rejected" in wrapper_plan
+        and "SDK-backed `make check` passed" in wrapper_plan
+        and "external working directory" in wrapper_plan
+        and "hostile mutations rejected" in wrapper_plan,
+        "Gradle wrapper plan must record completed local verification evidence",
+        failures,
+    )
+    require(
+        "distributionSha256Sum" in readme
+        and "uncached build offline-reproducible" in readme
+        and "wrapper JAR and Gradle distribution checksums" in security,
+        "Repository docs must describe wrapper verification and its online boundary",
         failures,
     )
     for name, text in {
