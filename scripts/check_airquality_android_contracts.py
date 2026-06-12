@@ -48,6 +48,9 @@ def main():
     nonblocking_request_plan = read_text(
         "docs/plans/2026-06-10-main-activity-nonblocking-request.md"
     )
+    request_lifecycle_plan = read_text(
+        "docs/plans/2026-06-12-main-activity-request-lifecycle.md"
+    )
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
     readme = read_text("README.md")
@@ -115,6 +118,38 @@ def main():
         and "protected void onPostExecute(JSONObject response)" in main_activity
         and "state = readAirQualityState(response);" in main_activity,
         "MainActivity must update air quality from AsyncTask completion without blocking the UI thread",
+        failures,
+    )
+    require(
+        "private NetworkRequest airQualityRequest;" in main_activity
+        and "airQualityRequest = new NetworkRequest()" in main_activity
+        and "airQualityRequest.execute(" in main_activity,
+        "MainActivity must retain the active air-quality request",
+        failures,
+    )
+    callback_start = main_activity.find("protected void onPostExecute(JSONObject response)")
+    callback = main_activity[callback_start:] if callback_start >= 0 else ""
+    require(
+        "if (airQualityRequest != this)" in callback
+        and "airQualityRequest = null;" in callback
+        and "isCancelled() || isFinishing() || isDestroyed()" in callback
+        and callback.index("if (airQualityRequest != this)")
+        < callback.index("state = readAirQualityState(response);")
+        and callback.index("isCancelled() || isFinishing() || isDestroyed()")
+        < callback.index("state = readAirQualityState(response);"),
+        "MainActivity must ignore stale or teardown-time request callbacks",
+        failures,
+    )
+    destroy_start = main_activity.find("protected void onDestroy()")
+    destroy_method = main_activity[destroy_start:] if destroy_start >= 0 else ""
+    require(
+        "if (airQualityRequest != null)" in destroy_method
+        and "airQualityRequest.cancel(true);" in destroy_method
+        and "airQualityRequest = null;" in destroy_method
+        and "super.onDestroy();" in destroy_method
+        and destroy_method.index("airQualityRequest.cancel(true);")
+        < destroy_method.index("super.onDestroy();"),
+        "MainActivity must cancel and clear its request before destruction",
         failures,
     )
     require(
@@ -366,6 +401,12 @@ def main():
         "Status: Completed" in nonblocking_request_plan
         and "make check" in nonblocking_request_plan,
         "nonblocking MainActivity request plan must be completed and record make check",
+        failures,
+    )
+    require(
+        "Status: Completed" in request_lifecycle_plan
+        and "make check" in request_lifecycle_plan,
+        "MainActivity request lifecycle plan must be completed and record make check",
         failures,
     )
     for name, text in {

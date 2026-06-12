@@ -71,6 +71,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - `NetworkRequest` accepts only 2xx responses, reads at most 1 MiB, and closes
   response and connection resources before JSON handling.
 - `MainActivity` treats missing or malformed `air_quality` JSON as an explicit unknown state before accelerometer rendering.
+- `MainActivity` owns its active air-quality request, ignores stale callbacks,
+  and cancels the task when the activity is destroyed.
 - `MainActivity` checks that the location service is available before reading
   GPS or network provider state.
 - `MainActivity` registers accelerometer updates only after confirming the sensor
@@ -122,6 +124,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   baseline.
 - See `docs/plans/2026-06-10-network-response-size-limit.md` for bounded backend
   response handling and root-independent verification.
+- See `docs/plans/2026-06-12-main-activity-request-lifecycle.md` for request
+  cancellation and stale-callback handling.
 
 ## Contributing
 

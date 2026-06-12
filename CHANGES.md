@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-12
+
+1. Retained the active `NetworkRequest`, ignored stale or teardown-time
+   callbacks, and cancelled the task when `MainActivity` is destroyed.
+2. Added SDK-free lifecycle contracts and a completed implementation plan.
+
 ## 2026-06-10
 
 1. Added a pinned, read-only GitHub Actions workflow that runs the SDK-free
