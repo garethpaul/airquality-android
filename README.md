@@ -81,6 +81,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - `MainActivity` treats missing or malformed `air_quality` JSON as an explicit unknown state before accelerometer rendering.
 - `MainActivity` owns its active air-quality request, ignores stale callbacks,
   and cancels the task when the activity is destroyed.
+- `MainActivity` waits for a non-null location before starting the backend
+  request and stops location updates after success, on pause, and on teardown.
 - `MainActivity` checks that the location service is available before reading
   GPS or network provider state.
 - Generic location acquisition failure logs preserve the stable failure
@@ -138,6 +140,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   cancellation and stale-callback handling.
 - See `docs/plans/2026-06-13-network-request-log-redaction.md` for generic
   NetworkRequest failure logs and location-detail redaction.
+- See `docs/plans/2026-06-13-location-gated-air-quality-request.md` for the
+  location-gated request and listener cleanup contract.
 
 ## Contributing
 

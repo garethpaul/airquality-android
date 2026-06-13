@@ -94,6 +94,37 @@ def require(condition, message, failures):
         failures.append(message)
 
 
+def java_method(source, signature):
+    start = source.find(signature)
+    if start < 0:
+        return ""
+
+    opening_brace = source.find("{", start)
+    if opening_brace < 0:
+        return ""
+
+    depth = 0
+    for index in range(opening_brace, len(source)):
+        if source[index] == "{":
+            depth += 1
+        elif source[index] == "}":
+            depth -= 1
+            if depth == 0:
+                return source[start : index + 1]
+
+    return ""
+
+
+def contains_in_order(source, *snippets):
+    position = 0
+    for snippet in snippets:
+        position = source.find(snippet, position)
+        if position < 0:
+            return False
+        position += len(snippet)
+    return True
+
+
 def manifest_permissions():
     manifest = ET.parse(ROOT / "app/src/main/AndroidManifest.xml").getroot()
     return [
@@ -131,6 +162,9 @@ def main():
     )
     location_log_redaction_plan = read_text(
         "docs/plans/2026-06-13-location-log-redaction.md"
+    )
+    location_gated_request_plan = read_text(
+        "docs/plans/2026-06-13-location-gated-air-quality-request.md"
     )
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
@@ -208,6 +242,81 @@ def main():
         "MainActivity must retain the active air-quality request",
         failures,
     )
+    create_method = java_method(main_activity, "protected void onCreate(Bundle savedInstanceState)")
+    resume_method = java_method(main_activity, "protected void onResume()")
+    pause_method = java_method(main_activity, "protected void onPause()")
+    location_request_method = java_method(
+        main_activity,
+        "private void requestAirQualityForLocation(Location currentLocation)",
+    )
+    location_changed_method = java_method(
+        main_activity, "public void onLocationChanged(Location location)"
+    )
+    require(
+        "getLocation();" not in create_method
+        and "new NetworkRequest()" not in create_method
+        and "airQualityRequest.execute(" not in create_method,
+        "MainActivity onCreate must not start an air-quality request before location acquisition",
+        failures,
+    )
+    require(
+        "if (location == null && airQualityRequest == null)" in resume_method
+        and "locationUpdatesActive = true;" in resume_method
+        and "requestAirQualityForLocation(getLocation());" in resume_method,
+        "MainActivity must resume location acquisition only without a location or active request",
+        failures,
+    )
+    require(
+        "if (currentLocation == null || !locationUpdatesActive)" in location_request_method
+        and "location = currentLocation;" in location_request_method
+        and "latitude = currentLocation.getLatitude();" in location_request_method
+        and "longitude = currentLocation.getLongitude();" in location_request_method
+        and "stopLocationUpdates();" in location_request_method
+        and "airQualityRequest.execute(" in location_request_method,
+        "MainActivity must gate requests on an active non-null location and record its coordinates",
+        failures,
+    )
+    require(
+        location_request_method.count("airQualityRequest.execute(") == 1
+        and contains_in_order(
+            location_request_method,
+            "location = currentLocation;",
+            "latitude = currentLocation.getLatitude();",
+            "longitude = currentLocation.getLongitude();",
+            "stopLocationUpdates();",
+            "airQualityRequest = new NetworkRequest()",
+            "airQualityRequest.execute(",
+        ),
+        "MainActivity must record location and stop updates before creating or executing a request",
+        failures,
+    )
+    require(
+        "if (airQualityRequest != null)" in location_request_method
+        and "airQualityRequest.cancel(true);" in location_request_method
+        and contains_in_order(
+            location_request_method,
+            "airQualityRequest.cancel(true);",
+            "airQualityRequest = new NetworkRequest()",
+        ),
+        "MainActivity must cancel a superseded request before replacing it",
+        failures,
+    )
+    require(
+        "requestAirQualityForLocation(location);" in location_changed_method
+        and "new NetworkRequest()" not in location_changed_method,
+        "MainActivity location callbacks must delegate to the gated request helper",
+        failures,
+    )
+    require(
+        "locationUpdatesActive = false;" in pause_method
+        and "stopLocationUpdates();" in pause_method
+        and "super.onPause();" in pause_method
+        and contains_in_order(
+            pause_method, "stopLocationUpdates();", "super.onPause();"
+        ),
+        "MainActivity must stop location updates before pausing",
+        failures,
+    )
     callback_start = main_activity.find("protected void onPostExecute(JSONObject response)")
     callback = main_activity[callback_start:] if callback_start >= 0 else ""
     require(
@@ -227,10 +336,16 @@ def main():
         "if (airQualityRequest != null)" in destroy_method
         and "airQualityRequest.cancel(true);" in destroy_method
         and "airQualityRequest = null;" in destroy_method
+        and "locationUpdatesActive = false;" in destroy_method
+        and "stopLocationUpdates();" in destroy_method
         and "super.onDestroy();" in destroy_method
-        and destroy_method.index("airQualityRequest.cancel(true);")
-        < destroy_method.index("super.onDestroy();"),
-        "MainActivity must cancel and clear its request before destruction",
+        and contains_in_order(
+            destroy_method, "stopLocationUpdates();", "super.onDestroy();"
+        )
+        and contains_in_order(
+            destroy_method, "airQualityRequest.cancel(true);", "super.onDestroy();"
+        ),
+        "MainActivity must stop location updates and cancel its request before destruction",
         failures,
     )
     require(
@@ -521,6 +636,21 @@ def main():
         and "make check" in location_log_redaction_plan
         and "hostile mutations" in location_log_redaction_plan,
         "MainActivity location log-redaction plan must record completed verification",
+        failures,
+    )
+    require(
+        "Status: Completed" in location_gated_request_plan
+        and "make check" in location_gated_request_plan
+        and "hostile mutations" in location_gated_request_plan,
+        "location-gated request plan must record completed verification",
+        failures,
+    )
+    require(
+        "waits for a non-null location" in readme
+        and "stops location updates" in security
+        and "location-gated backend requests" in vision
+        and "location-gated" in changes,
+        "project docs must describe the location-gated request lifecycle",
         failures,
     )
     require(
