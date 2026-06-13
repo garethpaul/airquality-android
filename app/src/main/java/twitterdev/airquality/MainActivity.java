@@ -89,7 +89,8 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
 
     @Override
     protected void onPause() {
-        restartAirQualityRequestOnResume = airQualityRequest != null;
+        restartAirQualityRequestOnResume = restartAirQualityRequestOnResume
+                || airQualityRequest != null;
         locationUpdatesActive = false;
         stopLocationUpdates();
         cancelAirQualityRequest();
@@ -135,6 +136,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                 if (isCancelled() || isFinishing() || isDestroyed()) {
                     return;
                 }
+                restartAirQualityRequestOnResume = response == null;
                 state = readAirQualityState(response);
             }
         };

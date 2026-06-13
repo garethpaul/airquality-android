@@ -33,6 +33,8 @@ Priority:
   location updates once a usable position is acquired
 - Invalidate in-flight backend work while paused and restart only interrupted
   requests from the retained location on resume
+- Preserve failed-request retry intent across pause and retry once on resume
+  without an automatic retry loop
 - Keep location service availability checked before provider state reads
 - Keep malformed or missing air-quality responses from crashing sensor-driven
   rendering

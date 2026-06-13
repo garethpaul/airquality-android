@@ -169,6 +169,9 @@ def main():
     paused_request_plan = read_text(
         "docs/plans/2026-06-13-paused-air-quality-request-invalidation.md"
     )
+    failed_request_retry_plan = read_text(
+        "docs/plans/2026-06-13-failed-air-quality-request-resume-retry.md"
+    )
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
     readme = read_text("README.md")
@@ -316,19 +319,22 @@ def main():
         failures,
     )
     require(
-        "restartAirQualityRequestOnResume = airQualityRequest != null;" in pause_method
+        "restartAirQualityRequestOnResume = restartAirQualityRequestOnResume"
+        in pause_method
+        and "|| airQualityRequest != null;" in pause_method
         and "locationUpdatesActive = false;" in pause_method
         and "stopLocationUpdates();" in pause_method
         and "cancelAirQualityRequest();" in pause_method
         and "super.onPause();" in pause_method
         and contains_in_order(
             pause_method,
-            "restartAirQualityRequestOnResume = airQualityRequest != null;",
+            "restartAirQualityRequestOnResume = restartAirQualityRequestOnResume",
+            "|| airQualityRequest != null;",
             "stopLocationUpdates();",
             "cancelAirQualityRequest();",
             "super.onPause();",
         ),
-        "MainActivity must stop location updates and invalidate requests before pausing",
+        "MainActivity must preserve retry intent, stop location updates, and invalidate requests before pausing",
         failures,
     )
     require(
@@ -356,6 +362,16 @@ def main():
         and callback.index("isCancelled() || isFinishing() || isDestroyed()")
         < callback.index("state = readAirQualityState(response);"),
         "MainActivity must ignore stale or teardown-time request callbacks",
+        failures,
+    )
+    require(
+        "restartAirQualityRequestOnResume = response == null;" in callback
+        and callback.index("if (airQualityRequest != this)")
+        < callback.index("restartAirQualityRequestOnResume = response == null;")
+        and callback.index("isCancelled() || isFinishing() || isDestroyed()")
+        < callback.index("restartAirQualityRequestOnResume = response == null;")
+        < callback.index("state = readAirQualityState(response);"),
+        "MainActivity must record failed request retry intent only for the current live callback",
         failures,
     )
     destroy_start = main_activity.find("protected void onDestroy()")
@@ -677,6 +693,21 @@ def main():
         and "make check" in paused_request_plan
         and "hostile mutations" in paused_request_plan,
         "paused request invalidation plan must record completed verification",
+        failures,
+    )
+    require(
+        "Status: Completed" in failed_request_retry_plan
+        and "make check" in failed_request_retry_plan
+        and "hostile mutations" in failed_request_retry_plan.lower(),
+        "failed request resume retry plan must record completed verification",
+        failures,
+    )
+    require(
+        "Failed air-quality requests retain one resume-time retry" in readme
+        and "pause must not discard it" in security
+        and "Preserve failed-request retry intent" in vision
+        and "Preserved failed air-quality request retry intent" in changes,
+        "failed request resume retry must remain documented across project guidance",
         failures,
     )
     require(

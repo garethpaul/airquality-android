@@ -17,6 +17,9 @@
 7. Invalidated and cancelled in-flight air-quality requests on pause, ignored
    late callbacks through the existing identity guard, and resumed only work
    interrupted by pause from the retained location.
+8. Preserved failed air-quality request retry intent across pause and reused
+   the accepted location for one retry on the next resume without an automatic
+   retry loop.
 
 ## 2026-06-12
 

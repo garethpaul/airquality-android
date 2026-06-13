@@ -6,7 +6,7 @@ type: implementation-plan
 
 # Failed Air Quality Request Resume Retry
 
-Status: Planned
+Status: Completed
 
 ## Summary
 
@@ -55,11 +55,26 @@ so resume does not retry and location updates remain stopped.
   target SDK.
 - Do not claim emulator or physical-device behavior without execution evidence.
 
-## Planned Verification
+## Work Completed
 
-- Local and external-working-directory `make check`
-- Hosted Python 3.10, 3.12, 3.14, and Android jobs when available
-- Hostile mutations for lost retry marking, pause overwrite, success retention,
+- Marked resume-time retry intent when the current request returns no response,
+  after stale, cancelled, finishing, and destroyed callback guards.
+- Preserved existing retry intent when pause records an interrupted request by
+  combining both conditions instead of overwriting the flag.
+- Reused the existing resume path so retained locations retry once and the flag
+  is cleared before dispatch; successful responses clear retry intent.
+- Extended the SDK-free checker and project guidance with mutation-sensitive
+  ordering, documentation, and completed-plan contracts.
+
+## Verification Completed
+
+- Local and external-working-directory `make check` passed Python compilation
+  and all SDK-free contracts; Gradle truthfully skipped because the Android SDK
+  is not configured in this Linux worktree.
+- Hosted Python 3.10, 3.12, 3.14, and Android results are recorded separately
+  in tracker evidence after push; this plan makes no pre-push hosted claim.
+- Seven hostile mutations for lost retry marking, pause overwrite, success retention,
   stale callback ordering, teardown retention, documentation, and plan status
+  were rejected
 - Exact diff, generated-artifact, credential-pattern, coordinate-log, conflict,
-  and whitespace inspection
+  and whitespace inspection passed
