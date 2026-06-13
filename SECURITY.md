@@ -57,6 +57,8 @@ Helpful reports include:
 - `MainActivity` must clear and cancel its active backend request before pause
   and destruction, then ignore callbacks from stale, cancelled, finishing, or
   destroyed activity instances.
+- Failed backend requests retain only an in-memory resume-time retry marker;
+  pause must not discard it, and no coordinates or provider details are logged.
 - `MainActivity` starts backend requests only after a non-null device location
   is available and stops location updates after acquisition, on pause, and
   during destruction.
