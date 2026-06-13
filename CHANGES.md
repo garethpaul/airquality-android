@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-06-13
+
+1. Replaced throwable-bearing warnings with generic NetworkRequest failure logs
+   for protocol, I/O, JSON, and invalid-parameter paths.
+2. Strengthened SDK-free contracts and documentation against stack-trace,
+   exception-message, coordinate, and provider-detail logging regressions.
+
 ## 2026-06-12
 
 1. Regenerated the Gradle wrapper bootstrap with official Gradle 8.14.5

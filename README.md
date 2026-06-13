@@ -75,6 +75,9 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - `NetworkRequest` applies bounded connection and socket timeouts to the HTTP client used for the backend request.
 - `NetworkRequest` accepts only 2xx responses, reads at most 1 MiB, and closes
   response and connection resources before JSON handling.
+- Generic NetworkRequest failure logs preserve protocol, JSON, and parameter
+  categories without recording throwable stack traces, coordinate-bearing
+  request URLs, or provider exception details.
 - `MainActivity` treats missing or malformed `air_quality` JSON as an explicit unknown state before accelerometer rendering.
 - `MainActivity` owns its active air-quality request, ignores stale callbacks,
   and cancels the task when the activity is destroyed.
@@ -131,6 +134,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   response handling and root-independent verification.
 - See `docs/plans/2026-06-12-main-activity-request-lifecycle.md` for request
   cancellation and stale-callback handling.
+- See `docs/plans/2026-06-13-network-request-log-redaction.md` for generic
+  NetworkRequest failure logs and location-detail redaction.
 
 ## Contributing
 
