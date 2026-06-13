@@ -1,6 +1,6 @@
 # MainActivity Location Log Redaction
 
-Status: Planned
+Status: Completed
 
 ## Context
 
@@ -69,7 +69,16 @@ mutation, and hosted evidence after execution.
 
 ## Verification
 
-Pending implementation and execution.
+- The focused source contract passed with exactly one generic location warning
+  and no throwable, exception-message, stringified-exception, or raw-stack
+  logging in `MainActivity`.
+- Isolated `make check` passed Python compilation and all SDK-free repository
+  contracts. Gradle truthfully skipped because no Android SDK is configured.
+- Six hostile mutations were rejected: restoring the throwable overload,
+  logging `getMessage`, restoring `printStackTrace`, removing the failure
+  category, removing security guidance, and reverting plan completion.
+- Device/emulator logcat, Android compilation, lint, unit tests, and APK
+  assembly remain hosted or platform validation boundaries.
 
 ## Sources
 

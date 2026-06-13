@@ -51,6 +51,9 @@ Helpful reports include:
   parameter categories. They do not pass dependency throwables to logcat,
   where stack traces or messages could expose coordinates, request URLs, or
   provider response details.
+- Generic location acquisition failure logs do not pass platform throwables to
+  logcat, where provider state, permission details, or device configuration
+  could be exposed.
 - `MainActivity` must cancel its active backend request during destruction and
   ignore callbacks from stale, cancelled, finishing, or destroyed activity
   instances.

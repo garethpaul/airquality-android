@@ -6,6 +6,9 @@
    for protocol, I/O, JSON, and invalid-parameter paths.
 2. Strengthened SDK-free contracts and documentation against stack-trace,
    exception-message, coordinate, and provider-detail logging regressions.
+3. Removed the caught platform exception from `MainActivity` location failure
+   logs while retaining the stable failure category and fallback behavior.
+4. Added portable contracts and privacy guidance for the location log boundary.
 
 ## 2026-06-12
 

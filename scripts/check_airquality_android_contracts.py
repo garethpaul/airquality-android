@@ -129,6 +129,9 @@ def main():
     log_redaction_plan = read_text(
         "docs/plans/2026-06-13-network-request-log-redaction.md"
     )
+    location_log_redaction_plan = read_text(
+        "docs/plans/2026-06-13-location-log-redaction.md"
+    )
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
     readme = read_text("README.md")
@@ -337,6 +340,27 @@ def main():
         failures,
     )
     require(
+        main_activity.count('Log.w(TAG, "Unable to read device location");') == 1,
+        "MainActivity must keep one generic location failure warning",
+        failures,
+    )
+    require(
+        not re.search(r'Log\.w\(TAG,\s*"Unable to read device location",', main_activity)
+        and "printStackTrace()" not in main_activity
+        and "Log.getStackTraceString" not in main_activity
+        and "e.getMessage()" not in main_activity
+        and "e.toString()" not in main_activity,
+        "MainActivity must not log throwable or exception-derived location details",
+        failures,
+    )
+    require(
+        "Generic location acquisition failure logs" in readme
+        and "Generic location acquisition failure logs" in security
+        and "location log boundary" in changes,
+        "Repository guidance must document the generic location log boundary",
+        failures,
+    )
+    require(
         login_activity.count("if (loginButton != null)") >= 2
         and login_activity.index("if (loginButton != null)")
         < login_activity.index("loginButton.setCallback")
@@ -490,6 +514,13 @@ def main():
         and "make check" in log_redaction_plan
         and "hostile mutations" in log_redaction_plan,
         "NetworkRequest log-redaction plan must record completed verification",
+        failures,
+    )
+    require(
+        "Status: Completed" in location_log_redaction_plan
+        and "make check" in location_log_redaction_plan
+        and "hostile mutations" in location_log_redaction_plan,
+        "MainActivity location log-redaction plan must record completed verification",
         failures,
     )
     require(
