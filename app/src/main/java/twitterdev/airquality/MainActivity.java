@@ -252,7 +252,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
             }
 
         } catch (Exception e) {
-            Log.w(TAG, "Unable to read device location", e);
+            Log.w(TAG, "Unable to read device location");
         }
 
         return location;

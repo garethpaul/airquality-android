@@ -83,6 +83,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   and cancels the task when the activity is destroyed.
 - `MainActivity` checks that the location service is available before reading
   GPS or network provider state.
+- Generic location acquisition failure logs preserve the stable failure
+  category without recording provider, permission, or throwable details.
 - `MainActivity` registers accelerometer updates only after confirming the sensor
   manager and accelerometer are available.
 - `MainActivity` ignores malformed sensor events and missing display views
