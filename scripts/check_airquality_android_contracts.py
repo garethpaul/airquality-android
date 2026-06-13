@@ -166,6 +166,9 @@ def main():
     location_gated_request_plan = read_text(
         "docs/plans/2026-06-13-location-gated-air-quality-request.md"
     )
+    paused_request_plan = read_text(
+        "docs/plans/2026-06-13-paused-air-quality-request-invalidation.md"
+    )
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
     readme = read_text("README.md")
@@ -245,6 +248,9 @@ def main():
     create_method = java_method(main_activity, "protected void onCreate(Bundle savedInstanceState)")
     resume_method = java_method(main_activity, "protected void onResume()")
     pause_method = java_method(main_activity, "protected void onPause()")
+    cancel_request_method = java_method(
+        main_activity, "private void cancelAirQualityRequest()"
+    )
     location_request_method = java_method(
         main_activity,
         "private void requestAirQualityForLocation(Location currentLocation)",
@@ -260,10 +266,13 @@ def main():
         failures,
     )
     require(
-        "if (location == null && airQualityRequest == null)" in resume_method
+        "airQualityRequest == null" in resume_method
+        and "location == null || restartAirQualityRequestOnResume" in resume_method
+        and "restartAirQualityRequestOnResume = false;" in resume_method
         and "locationUpdatesActive = true;" in resume_method
-        and "requestAirQualityForLocation(getLocation());" in resume_method,
-        "MainActivity must resume location acquisition only without a location or active request",
+        and "requestAirQualityForLocation(location != null ? location : getLocation());"
+        in resume_method,
+        "MainActivity must resume interrupted requests from retained or newly acquired location",
         failures,
     )
     require(
@@ -291,11 +300,10 @@ def main():
         failures,
     )
     require(
-        "if (airQualityRequest != null)" in location_request_method
-        and "airQualityRequest.cancel(true);" in location_request_method
+        "cancelAirQualityRequest();" in location_request_method
         and contains_in_order(
             location_request_method,
-            "airQualityRequest.cancel(true);",
+            "cancelAirQualityRequest();",
             "airQualityRequest = new NetworkRequest()",
         ),
         "MainActivity must cancel a superseded request before replacing it",
@@ -308,13 +316,33 @@ def main():
         failures,
     )
     require(
-        "locationUpdatesActive = false;" in pause_method
+        "restartAirQualityRequestOnResume = airQualityRequest != null;" in pause_method
+        and "locationUpdatesActive = false;" in pause_method
         and "stopLocationUpdates();" in pause_method
+        and "cancelAirQualityRequest();" in pause_method
         and "super.onPause();" in pause_method
         and contains_in_order(
-            pause_method, "stopLocationUpdates();", "super.onPause();"
+            pause_method,
+            "restartAirQualityRequestOnResume = airQualityRequest != null;",
+            "stopLocationUpdates();",
+            "cancelAirQualityRequest();",
+            "super.onPause();",
         ),
-        "MainActivity must stop location updates before pausing",
+        "MainActivity must stop location updates and invalidate requests before pausing",
+        failures,
+    )
+    require(
+        "NetworkRequest request = airQualityRequest;" in cancel_request_method
+        and "airQualityRequest = null;" in cancel_request_method
+        and "if (request != null)" in cancel_request_method
+        and "request.cancel(true);" in cancel_request_method
+        and contains_in_order(
+            cancel_request_method,
+            "NetworkRequest request = airQualityRequest;",
+            "airQualityRequest = null;",
+            "request.cancel(true);",
+        ),
+        "MainActivity must clear request identity before cancellation",
         failures,
     )
     callback_start = main_activity.find("protected void onPostExecute(JSONObject response)")
@@ -333,9 +361,8 @@ def main():
     destroy_start = main_activity.find("protected void onDestroy()")
     destroy_method = main_activity[destroy_start:] if destroy_start >= 0 else ""
     require(
-        "if (airQualityRequest != null)" in destroy_method
-        and "airQualityRequest.cancel(true);" in destroy_method
-        and "airQualityRequest = null;" in destroy_method
+        "restartAirQualityRequestOnResume = false;" in destroy_method
+        and "cancelAirQualityRequest();" in destroy_method
         and "locationUpdatesActive = false;" in destroy_method
         and "stopLocationUpdates();" in destroy_method
         and "super.onDestroy();" in destroy_method
@@ -343,7 +370,7 @@ def main():
             destroy_method, "stopLocationUpdates();", "super.onDestroy();"
         )
         and contains_in_order(
-            destroy_method, "airQualityRequest.cancel(true);", "super.onDestroy();"
+            destroy_method, "cancelAirQualityRequest();", "super.onDestroy();"
         ),
         "MainActivity must stop location updates and cancel its request before destruction",
         failures,
@@ -643,6 +670,22 @@ def main():
         and "make check" in location_gated_request_plan
         and "hostile mutations" in location_gated_request_plan,
         "location-gated request plan must record completed verification",
+        failures,
+    )
+    require(
+        "Status: Completed" in paused_request_plan
+        and "make check" in paused_request_plan
+        and "hostile mutations" in paused_request_plan,
+        "paused request invalidation plan must record completed verification",
+        failures,
+    )
+    require(
+        "background request invalidation" in readme
+        and "before pause" in security
+        and "Invalidate in-flight backend work" in vision
+        and "Invalidated and cancelled in-flight air-quality requests on pause"
+        in changes,
+        "paused request invalidation must remain documented across project guidance",
         failures,
     )
     require(

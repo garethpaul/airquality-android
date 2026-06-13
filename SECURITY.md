@@ -54,9 +54,9 @@ Helpful reports include:
 - Generic location acquisition failure logs do not pass platform throwables to
   logcat, where provider state, permission details, or device configuration
   could be exposed.
-- `MainActivity` must cancel its active backend request during destruction and
-  ignore callbacks from stale, cancelled, finishing, or destroyed activity
-  instances.
+- `MainActivity` must clear and cancel its active backend request before pause
+  and destruction, then ignore callbacks from stale, cancelled, finishing, or
+  destroyed activity instances.
 - `MainActivity` starts backend requests only after a non-null device location
   is available and stops location updates after acquisition, on pause, and
   during destruction.

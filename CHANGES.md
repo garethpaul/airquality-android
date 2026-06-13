@@ -14,6 +14,9 @@
    activity lifecycle cleanup.
 6. Added mutation-sensitive SDK-free contracts for request ordering and
    location-listener cleanup.
+7. Invalidated and cancelled in-flight air-quality requests on pause, ignored
+   late callbacks through the existing identity guard, and resumed only work
+   interrupted by pause from the retained location.
 
 ## 2026-06-12
 

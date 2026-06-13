@@ -142,6 +142,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   NetworkRequest failure logs and location-detail redaction.
 - See `docs/plans/2026-06-13-location-gated-air-quality-request.md` for the
   location-gated request and listener cleanup contract.
+- See `docs/plans/2026-06-13-paused-air-quality-request-invalidation.md` for
+  background request invalidation and interrupted-request resume behavior.
 
 ## Contributing
 
