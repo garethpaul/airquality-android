@@ -31,6 +31,8 @@ Priority:
   completion callbacks
 - Keep location-gated backend requests from using default coordinates and stop
   location updates once a usable position is acquired
+- Invalidate in-flight backend work while paused and restart only interrupted
+  requests from the retained location on resume
 - Keep location service availability checked before provider state reads
 - Keep malformed or missing air-quality responses from crashing sensor-driven
   rendering

@@ -6,13 +6,13 @@ type: implementation-plan
 
 # Paused Air Quality Request Invalidation
 
-Status: Planned
+Status: Completed
 
 ## Summary
 
 Invalidate and cancel an in-flight air-quality request when `MainActivity`
-pauses, then restart unresolved work from the retained location on resume
-without refreshing already successful state.
+pauses, then restart only pause-interrupted work from the retained location on
+resume without refreshing completed results.
 
 ## Problem Frame
 
@@ -28,8 +28,9 @@ when `location` is null.
   `onPause()` delegates to the superclass.
 - R2. Keep the existing callback identity guard so a late completion from the
   paused task cannot clear or update current activity state.
-- R3. On resume, start work only when no request is active and the air-quality
-  state is still unresolved.
+- R3. Record whether pause interrupted an active request and restart only when
+  no request is active and either location acquisition or that request remains
+  incomplete.
 - R4. Prefer the retained location for a resumed request; acquire a location
   only when none is retained.
 - R5. Preserve successful state across pause/resume without starting a
@@ -46,9 +47,9 @@ when `location` is null.
 - **Reuse request identity as the stale-callback guard:** setting
   `airQualityRequest` to null before cancellation makes any later callback fail
   the existing `airQualityRequest != this` check without adding a new token.
-- **Retry only unresolved state:** the existing `Unknown` sentinel separates a
-  paused incomplete request from a successful result and avoids unnecessary
-  refreshes.
+- **Track interruption explicitly:** a lifecycle flag records only requests
+  cancelled by pause, avoiding coupling request behavior to the display string
+  or changing completed-failure behavior.
 - **Reuse retained location:** a resumed incomplete request can dispatch from
   the already accepted coordinates without reopening provider listeners.
 
@@ -67,11 +68,12 @@ when `location` is null.
 ### U2. Resume Only Unresolved Work
 
 - **Files:** `app/src/main/java/twitterdev/airquality/MainActivity.java`
-- **Goal:** Gate resume on no active request plus unresolved state, dispatching
-  from the retained location or falling back to location acquisition.
-- **Test scenarios:** An unresolved retained location restarts exactly once;
-  unresolved missing location starts acquisition; active requests and resolved
-  state do not start duplicate work.
+- **Goal:** Gate resume on no active request plus missing location or an
+  explicit pause-interruption flag, dispatching from the retained location or
+  falling back to location acquisition.
+- **Test scenarios:** A pause-interrupted retained location restarts exactly
+  once; missing location starts acquisition; active requests and completed
+  results do not start duplicate work.
 
 ### U3. Preserve The Durable Contract
 
@@ -93,3 +95,19 @@ when `location` is null.
   or coordinate logging.
 - Do not refresh a successful result solely because the activity resumed.
 - Do not claim emulator or physical-device behavior without execution evidence.
+
+## Verification
+
+- The SDK-free checker requires pause-time invalidation before superclass
+  delegation, request identity clearing before cancellation, retained-location
+  resume, interruption gating, callback identity protection, and shared
+  destroy/supersession cleanup.
+- Local and external-working-directory `make check` passed Python compilation
+  and all SDK-free contracts; Gradle truthfully skipped because no Android SDK
+  is configured in this Linux worktree.
+- Eleven focused hostile mutations were rejected across resume predicates,
+  retained-location reuse, pause interruption recording, cancellation,
+  identity clearing, callback guards, shared cleanup, documentation, and
+  completed plan status.
+- No location coordinates, credentials, live provider requests, emulator, or
+  physical-device data are used by the SDK-free contracts.

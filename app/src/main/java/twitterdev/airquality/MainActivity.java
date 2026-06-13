@@ -73,21 +73,26 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     private TextView text;
     private NetworkRequest airQualityRequest;
     private boolean locationUpdatesActive;
+    private boolean restartAirQualityRequestOnResume;
 
     @Override
     protected void onResume() {
         super.onResume();
         registerAccelerometerListener();
-        if (location == null && airQualityRequest == null) {
+        if (airQualityRequest == null
+                && (location == null || restartAirQualityRequestOnResume)) {
+            restartAirQualityRequestOnResume = false;
             locationUpdatesActive = true;
-            requestAirQualityForLocation(getLocation());
+            requestAirQualityForLocation(location != null ? location : getLocation());
         }
     }
 
     @Override
     protected void onPause() {
+        restartAirQualityRequestOnResume = airQualityRequest != null;
         locationUpdatesActive = false;
         stopLocationUpdates();
+        cancelAirQualityRequest();
         unregisterAccelerometerListener();
         super.onPause();
     }
@@ -118,9 +123,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         locationUpdatesActive = false;
         stopLocationUpdates();
 
-        if (airQualityRequest != null) {
-            airQualityRequest.cancel(true);
-        }
+        cancelAirQualityRequest();
 
         airQualityRequest = new NetworkRequest() {
             @Override
@@ -150,14 +153,20 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         }
     }
 
+    private void cancelAirQualityRequest() {
+        NetworkRequest request = airQualityRequest;
+        airQualityRequest = null;
+        if (request != null) {
+            request.cancel(true);
+        }
+    }
+
     @Override
     protected void onDestroy() {
+        restartAirQualityRequestOnResume = false;
         locationUpdatesActive = false;
         stopLocationUpdates();
-        if (airQualityRequest != null) {
-            airQualityRequest.cancel(true);
-            airQualityRequest = null;
-        }
+        cancelAirQualityRequest();
         super.onDestroy();
     }
 
