@@ -9,6 +9,11 @@
 3. Removed the caught platform exception from `MainActivity` location failure
    logs while retaining the stable failure category and fallback behavior.
 4. Added portable contracts and privacy guidance for the location log boundary.
+5. Made backend air-quality requests location-gated, including last-known and
+   callback acquisition paths, and stopped location updates across success and
+   activity lifecycle cleanup.
+6. Added mutation-sensitive SDK-free contracts for request ordering and
+   location-listener cleanup.
 
 ## 2026-06-12
 

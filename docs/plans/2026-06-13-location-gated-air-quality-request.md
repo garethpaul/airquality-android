@@ -1,6 +1,6 @@
 # Location-Gated Air-Quality Request
 
-Status: Planned
+Status: Completed
 
 ## Context
 
@@ -73,3 +73,19 @@ completed verification evidence.
 - Run Python compilation, `git diff --check`, artifact scans, and added-line
   secret/location-detail scans.
 - Record hosted evidence only after exact-head checks complete.
+
+## Verification
+
+- `python3 scripts/check_airquality_android_contracts.py` reached only the
+  expected incomplete-plan assertion before this status was updated.
+- Ten focused hostile mutations were rejected for null gating, resume
+  acquisition, startup ordering, both coordinate assignments, pre-cleanup
+  execution, superseded cancellation, callback delegation, pause cleanup, and
+  destroy cleanup.
+- Local `make check` passed, including Python compilation and the SDK-free
+  contract suite; Gradle was truthfully skipped because no Android SDK is
+  configured in the worktree.
+- An isolated external copy passed the same `make check` gate with the same
+  explicit Android SDK skip.
+- `git diff --check`, generated-artifact inspection, and added-line secret and
+  coordinate-log scans passed. Hosted exact-head checks remain pending push.

@@ -72,18 +72,24 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     private ImageView logo;
     private TextView text;
     private NetworkRequest airQualityRequest;
+    private boolean locationUpdatesActive;
 
     @Override
     protected void onResume() {
         super.onResume();
         registerAccelerometerListener();
+        if (location == null && airQualityRequest == null) {
+            locationUpdatesActive = true;
+            requestAirQualityForLocation(getLocation());
+        }
     }
 
     @Override
     protected void onPause() {
-        // unregister listener
-        super.onPause();
+        locationUpdatesActive = false;
+        stopLocationUpdates();
         unregisterAccelerometerListener();
+        super.onPause();
     }
 
     @Override
@@ -91,7 +97,6 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context = this;
-        getLocation();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
@@ -100,6 +105,22 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
 
         logo = (ImageView) findViewById(R.id.imageView);
         text = (TextView) findViewById(R.id.textView);
+    }
+
+    private void requestAirQualityForLocation(Location currentLocation) {
+        if (currentLocation == null || !locationUpdatesActive) {
+            return;
+        }
+
+        location = currentLocation;
+        latitude = currentLocation.getLatitude();
+        longitude = currentLocation.getLongitude();
+        locationUpdatesActive = false;
+        stopLocationUpdates();
+
+        if (airQualityRequest != null) {
+            airQualityRequest.cancel(true);
+        }
 
         airQualityRequest = new NetworkRequest() {
             @Override
@@ -117,8 +138,22 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         airQualityRequest.execute(String.valueOf(latitude), String.valueOf(longitude));
     }
 
+    private void stopLocationUpdates() {
+        if (locationManager == null) {
+            return;
+        }
+
+        try {
+            locationManager.removeUpdates(this);
+        } catch (SecurityException e) {
+            Log.w(TAG, "Unable to stop location updates");
+        }
+    }
+
     @Override
     protected void onDestroy() {
+        locationUpdatesActive = false;
+        stopLocationUpdates();
         if (airQualityRequest != null) {
             airQualityRequest.cancel(true);
             airQualityRequest = null;
@@ -221,12 +256,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                     if (locationManager != null) {
                         location = locationManager
                                 .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                        if (location != null) {
-
-                            latitude = location.getLatitude();
-                            longitude = location.getLongitude();
-
-                        } else {
+                        if (location == null) {
                             Log.d("Network", "not null");
                         }
                     }
@@ -242,10 +272,6 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                         if (locationManager != null) {
                             location = locationManager
                                     .getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                            if (location != null) {
-                                latitude = location.getLatitude();
-                                longitude = location.getLongitude();
-                            }
                         }
                     }
                 }
@@ -284,8 +310,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
 
     @Override
     public void onLocationChanged(Location location) {
-
-
+        requestAirQualityForLocation(location);
     }
 
     @Override

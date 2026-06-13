@@ -29,6 +29,8 @@ Priority:
 - Bound backend response bytes and reject non-2xx responses before JSON parsing
 - Cancel activity-owned backend requests during teardown and ignore stale
   completion callbacks
+- Keep location-gated backend requests from using default coordinates and stop
+  location updates once a usable position is acquired
 - Keep location service availability checked before provider state reads
 - Keep malformed or missing air-quality responses from crashing sensor-driven
   rendering
