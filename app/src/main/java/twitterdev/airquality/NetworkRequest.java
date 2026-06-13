@@ -137,18 +137,18 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
 
 
             } catch (ClientProtocolException e) {
-                Log.w(TAG, "Air quality request failed", e);
+                Log.w(TAG, "Air quality request failed");
             } catch (IOException e) {
-                Log.w(TAG, "Air quality request failed", e);
+                Log.w(TAG, "Air quality request failed");
             } catch (JSONException e) {
-                Log.w(TAG, "Invalid air quality response JSON", e);
+                Log.w(TAG, "Invalid air quality response JSON");
             } finally {
                 httpclient.getConnectionManager().shutdown();
             }
 
 
         } catch (IllegalArgumentException e) {
-            Log.w(TAG, "Invalid air quality request parameters", e);
+            Log.w(TAG, "Invalid air quality request parameters");
         }
         return null;
     }

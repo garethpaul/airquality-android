@@ -2,6 +2,7 @@
 """Static contracts for the legacy AirQuality Android project."""
 
 import hashlib
+import re
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
@@ -125,6 +126,9 @@ def main():
         "docs/plans/2026-06-12-main-activity-request-lifecycle.md"
     )
     wrapper_plan = read_text("docs/plans/2026-06-12-gradle-wrapper-verification.md")
+    log_redaction_plan = read_text(
+        "docs/plans/2026-06-13-network-request-log-redaction.md"
+    )
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
     readme = read_text("README.md")
@@ -308,10 +312,20 @@ def main():
         failures,
     )
     require(
-        "printStackTrace()" not in main_activity
-        and 'Log.w(TAG, "Air quality request failed"' in network
-        and 'Log.w(TAG, "Invalid air quality response JSON"' in network,
-        "NetworkRequest must log request failures without raw stack traces",
+        network.count("Log.w(") == 4
+        and network.count('Log.w(TAG, "Air quality request failed");') == 2
+        and network.count('Log.w(TAG, "Invalid air quality response JSON");') == 1
+        and network.count('Log.w(TAG, "Invalid air quality request parameters");') == 1,
+        "NetworkRequest must keep exactly four generic warning categories",
+        failures,
+    )
+    require(
+        not re.search(r'Log\.w\(TAG,\s*"[^"]+",\s*e\)', network)
+        and "printStackTrace()" not in network
+        and "Log.getStackTraceString" not in network
+        and "e.getMessage()" not in network
+        and "e.toString()" not in network,
+        "NetworkRequest must not log throwable or exception-derived details",
         failures,
     )
     require(
@@ -472,6 +486,13 @@ def main():
         failures,
     )
     require(
+        "Status: Completed" in log_redaction_plan
+        and "make check" in log_redaction_plan
+        and "hostile mutations" in log_redaction_plan,
+        "NetworkRequest log-redaction plan must record completed verification",
+        failures,
+    )
+    require(
         read_text("gradle/wrapper/gradle-wrapper.properties")
         == EXPECTED_WRAPPER_PROPERTIES,
         "Gradle wrapper properties must retain the reviewed Gradle 2.2.1 URL and checksum",
@@ -533,6 +554,16 @@ def main():
         "README must link the CI baseline plan",
         failures,
     )
+    for name, text in {
+        "README.md": readme,
+        "SECURITY.md": security,
+        "CHANGES.md": changes,
+    }.items():
+        require(
+            "generic networkrequest failure logs" in text.lower(),
+            f"{name} must document generic NetworkRequest failure logs",
+            failures,
+        )
 
     if failures:
         print("AirQuality Android contract check failed:")

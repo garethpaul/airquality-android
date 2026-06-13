@@ -47,6 +47,10 @@ Helpful reports include:
   An uncached bootstrap still depends on Gradle's HTTPS service.
 - Backend responses must be 2xx and no larger than 1 MiB before JSON parsing;
   response streams and the legacy HTTP connection manager must be closed.
+- Generic NetworkRequest failure logs retain only stable protocol, JSON, and
+  parameter categories. They do not pass dependency throwables to logcat,
+  where stack traces or messages could expose coordinates, request URLs, or
+  provider response details.
 - `MainActivity` must cancel its active backend request during destruction and
   ignore callbacks from stale, cancelled, finishing, or destroyed activity
   instances.
