@@ -24,6 +24,13 @@ public class NetworkRequestTest {
     }
 
     @Test
+    public void buildUrlCanonicalizesJavaOnlyCoordinateSyntax() {
+        assertEquals(
+                "https://garethpaul-app.appspot.com/api/airquality?lat=37.7&lng=36.0",
+                NetworkRequest.buildUrl("37.7d", "0x1.2p5"));
+    }
+
+    @Test
     public void buildUrlFromParamsUsesFirstLatitudeAndLongitude() {
         assertEquals(
                 "https://garethpaul-app.appspot.com/api/airquality?lat=37.7&lng=-122.4",

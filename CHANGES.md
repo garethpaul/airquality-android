@@ -9,6 +9,8 @@
    only request target before response status validation.
 4. Required JSON application media types before response length checks, body
    access, strict UTF-8 decoding, and JSON parsing.
+5. Canonicalized validated coordinates before URL encoding so Java-only numeric
+   syntax is not forwarded to the backend parser.
 
 ## 2026-06-13
 
