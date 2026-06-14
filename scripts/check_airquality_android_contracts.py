@@ -181,6 +181,9 @@ def main():
     redirect_plan = read_text(
         "docs/plans/2026-06-14-disable-air-quality-http-redirects.md"
     )
+    media_type_plan = read_text(
+        "docs/plans/2026-06-14-air-quality-json-media-type.md"
+    )
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
     makefile_lines = set(makefile.splitlines())
@@ -435,6 +438,44 @@ def main():
         "entity.getContentLength() > RESPONSE_MAX_BYTES" in network
         and "totalBytes > RESPONSE_MAX_BYTES" in network,
         "NetworkRequest must enforce declared and streamed response size limits",
+        failures,
+    )
+    require(
+        "static void requireJsonMediaType(String contentType) throws IOException"
+        in network
+        and "contentType.indexOf(',') >= 0" in network
+        and '"application".equals(type)' in network
+        and '"json".equals(subtype)' in network
+        and 'subtype.endsWith("+json")' in network
+        and "isMimeToken(type)" in network
+        and "isMimeToken(subtype)" in network
+        and "character >= 'a' && character <= 'z'" in network
+        and "character >= '0' && character <= '9'" in network,
+        "NetworkRequest must accept only unambiguous JSON application media types",
+        failures,
+    )
+    require(
+        contains_in_order(
+            network,
+            "HttpEntity entity = response.getEntity();",
+            "Header contentType = entity.getContentType();",
+            "requireJsonMediaType(contentType == null ? null : contentType.getValue());",
+            "entity.getContentLength()",
+            "entity.getContent();",
+        ),
+        "NetworkRequest must validate media type before length and body access",
+        failures,
+    )
+    require(
+        "requireJsonMediaTypeAcceptsJsonApplicationTypes" in network_tests
+        and "requireJsonMediaTypeRejectsMissingAmbiguousAndNonJsonTypes"
+        in network_tests
+        and 'assertInvalidMediaType("application/json, text/html")'
+        in network_tests
+        and 'assertInvalidMediaType("application/caf\\u00e9+json")'
+        in network_tests
+        and 'assertInvalidMediaType("text/html")' in network_tests,
+        "NetworkRequest JSON media type behavior must retain focused unit coverage",
         failures,
     )
     require(
@@ -775,6 +816,21 @@ def main():
         and "Reject malformed UTF-8" in vision
         and "Rejected malformed UTF-8 backend responses" in changes,
         "strict backend response UTF-8 decoding must remain documented",
+        failures,
+    )
+    require(
+        "Status: Completed" in media_type_plan
+        and "make check" in media_type_plan
+        and "mutations" in media_type_plan.lower(),
+        "JSON response media type plan must record completed verification",
+        failures,
+    )
+    require(
+        "requires JSON response media types" in readme
+        and "require JSON application media types" in security
+        and "Require JSON application media types" in vision
+        and "Required JSON application media types" in changes,
+        "JSON response media type validation must remain documented",
         failures,
     )
     require(

@@ -71,6 +71,25 @@ public class NetworkRequestTest {
         }
     }
 
+    @Test
+    public void requireJsonMediaTypeAcceptsJsonApplicationTypes() throws IOException {
+        NetworkRequest.requireJsonMediaType("Application/JSON; charset=UTF-8");
+        NetworkRequest.requireJsonMediaType("application/problem+json");
+        NetworkRequest.requireJsonMediaType(" application/vnd.airquality.v1+json ");
+    }
+
+    @Test
+    public void requireJsonMediaTypeRejectsMissingAmbiguousAndNonJsonTypes() {
+        assertInvalidMediaType(null);
+        assertInvalidMediaType("");
+        assertInvalidMediaType("application/json, text/html");
+        assertInvalidMediaType("application/+json");
+        assertInvalidMediaType("application/vnd api+json");
+        assertInvalidMediaType("application/caf\u00e9+json");
+        assertInvalidMediaType("text/json");
+        assertInvalidMediaType("text/html");
+    }
+
     private void assertInvalidCoordinate(String lat, String lng) {
         try {
             NetworkRequest.buildUrl(lat, lng);
@@ -85,6 +104,15 @@ public class NetworkRequestTest {
             NetworkRequest.buildUrlFromParams(params);
             fail("Expected invalid async task parameters to be rejected");
         } catch (IllegalArgumentException expected) {
+            // Expected path.
+        }
+    }
+
+    private void assertInvalidMediaType(String contentType) {
+        try {
+            NetworkRequest.requireJsonMediaType(contentType);
+            fail("Expected invalid response media type to be rejected");
+        } catch (IOException expected) {
             // Expected path.
         }
     }

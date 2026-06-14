@@ -50,6 +50,9 @@ Helpful reports include:
   connection manager must be closed.
 - Backend requests reject automatic redirects so intermediaries cannot move the
   fixed HTTPS request to another transport target.
+- Backend responses require JSON application media types before length checks
+  or body access; missing, ambiguous, malformed, and non-JSON values fail
+  closed without content sniffing.
 - Generic NetworkRequest failure logs retain only stable protocol, JSON, and
   parameter categories. They do not pass dependency throwables to logcat,
   where stack traces or messages could expose coordinates, request URLs, or
