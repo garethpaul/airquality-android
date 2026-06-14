@@ -5,6 +5,8 @@
 1. Rejected malformed UTF-8 backend responses after enforcing the existing
    response byte limit and before JSON parsing.
 2. Added focused Java and portable contracts for strict UTF-8 decoding.
+3. Disabled automatic backend redirects so the fixed HTTPS endpoint remains the
+   only request target before response status validation.
 
 ## 2026-06-13
 

@@ -8,6 +8,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.params.HttpClientParams;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
@@ -134,6 +135,7 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
             HttpConnectionParams.setConnectionTimeout(httpParams,
                     REQUEST_TIMEOUT_MILLIS);
             HttpConnectionParams.setSoTimeout(httpParams, REQUEST_TIMEOUT_MILLIS);
+            HttpClientParams.setRedirecting(httpParams, false);
 
             // Instantiate an HttpClient
             HttpClient httpclient = new DefaultHttpClient(httpParams);

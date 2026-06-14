@@ -1,6 +1,6 @@
 # Disable Air Quality HTTP Redirects
 
-Status: Planned
+Status: Completed
 
 ## Context
 
@@ -54,15 +54,18 @@ public interface.
 
 ## Verification
 
-Planned:
+Completed on 2026-06-14:
 
-- Run the portable checker and focused legacy Gradle unit tests.
-- Run the full SDK-backed `make check` gate when the configured Java 8 and API
-  22 toolchain are available.
-- Reject focused mutations that remove the setting, move it after client
-  construction, remove security wording, or revert plan status.
-- Audit the exact diff, generated artifacts, whitespace, and credential-shaped
-  additions before committing.
+- The portable checker recognized the new source, ordering, and documentation
+  contracts and failed only while this plan was intentionally still planned.
+- The focused `NetworkRequestTest` Gradle task compiled the app and passed under
+  Amazon Corretto 8 with the local Android SDK.
+- Full SDK-backed `make check` passed the portable contracts, legacy Android
+  lint baseline, debug and release unit tests, Java compilation, and debug APK
+  assembly under Amazon Corretto 8 and the local Android SDK.
+- Four focused mutations were rejected when they removed the redirect setting,
+  moved it after client construction, removed the security wording, or changed
+  this plan back to `Status: Planned`.
 
 ## Risks
 

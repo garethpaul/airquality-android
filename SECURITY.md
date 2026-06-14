@@ -48,6 +48,8 @@ Helpful reports include:
 - Backend responses must reject malformed UTF-8, return 2xx, and remain no
   larger than 1 MiB before JSON parsing; response streams and the legacy HTTP
   connection manager must be closed.
+- Backend requests reject automatic redirects so intermediaries cannot move the
+  fixed HTTPS request to another transport target.
 - Generic NetworkRequest failure logs retain only stable protocol, JSON, and
   parameter categories. They do not pass dependency throwables to logcat,
   where stack traces or messages could expose coordinates, request URLs, or
