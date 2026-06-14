@@ -184,6 +184,9 @@ def main():
     media_type_plan = read_text(
         "docs/plans/2026-06-14-air-quality-json-media-type.md"
     )
+    coordinate_serialization_plan = read_text(
+        "docs/plans/2026-06-14-canonical-coordinate-serialization.md"
+    )
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
     makefile_lines = set(makefile.splitlines())
@@ -228,11 +231,25 @@ def main():
         failures,
     )
     require(
+        "return Double.toString(coordinate);" in network,
+        "NetworkRequest must serialize validated coordinates as canonical decimal values",
+        failures,
+    )
+    require(
         "buildUrlTrimsLatitudeAndLongitude" in network_tests
+        and "buildUrlCanonicalizesJavaOnlyCoordinateSyntax" in network_tests
+        and 'NetworkRequest.buildUrl("37.7d", "0x1.2p5")' in network_tests
         and "buildUrlRejectsMissingCoordinates" in network_tests
         and "buildUrlRejectsNonNumericAndOutOfRangeCoordinates" in network_tests
         and "Infinity" in network_tests,
         "NetworkRequestTest must cover trimming and invalid coordinate inputs",
+        failures,
+    )
+    require(
+        "Status: Completed" in coordinate_serialization_plan
+        and "make check" in coordinate_serialization_plan
+        and "mutations" in coordinate_serialization_plan.lower(),
+        "canonical coordinate serialization plan must record completed verification",
         failures,
     )
     require(
@@ -831,6 +848,14 @@ def main():
         and "Require JSON application media types" in vision
         and "Required JSON application media types" in changes,
         "JSON response media type validation must remain documented",
+        failures,
+    )
+    require(
+        "canonical decimal coordinate values" in readme
+        and "canonical decimal coordinates" in security
+        and "canonical decimal coordinates" in vision
+        and "Canonicalized validated coordinates" in changes,
+        "canonical coordinate serialization must remain documented",
         failures,
     )
     require(

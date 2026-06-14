@@ -34,6 +34,8 @@ Priority:
   completion callbacks
 - Keep location-gated backend requests from using default coordinates and stop
   location updates once a usable position is acquired
+- Send validated locations as canonical decimal coordinates across the backend
+  request boundary
 - Invalidate in-flight backend work while paused and restart only interrupted
   requests from the retained location on resume
 - Preserve failed-request retry intent across pause and retry once on resume

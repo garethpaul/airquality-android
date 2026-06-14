@@ -70,7 +70,9 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Detected references to Twitter. Keep API keys, OAuth credentials, tokens, and account-specific values in local configuration only.
 - `AirQualityApplication` skips Fabric/Twitter initialization while checked-in
   credential placeholders are blank.
-- `NetworkRequest.buildUrl` trims, validates, and URL-encodes latitude and longitude before constructing the backend request.
+- `NetworkRequest.buildUrl` trims and validates latitude and longitude, then
+  sends canonical decimal coordinate values through URL encoding so Java-only
+  numeric syntax cannot cross the backend boundary.
 - `NetworkRequest.buildUrlFromParams` validates the `AsyncTask` parameter array before the background request path creates an HTTP request.
 - `NetworkRequest` applies bounded connection and socket timeouts to the HTTP client used for the backend request.
 - `NetworkRequest` rejects automatic redirects so the fixed HTTPS backend is

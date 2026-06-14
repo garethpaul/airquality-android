@@ -76,7 +76,7 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
             throw new IllegalArgumentException(name + " is outside the supported range");
         }
 
-        return normalized;
+        return Double.toString(coordinate);
     }
 
     private static String urlEncode(String value) {
