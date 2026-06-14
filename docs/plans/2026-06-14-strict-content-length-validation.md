@@ -1,6 +1,6 @@
 # Strict Backend Content-Length Validation
 
-Status: Planned
+Status: Completed
 
 ## Context
 
@@ -29,11 +29,10 @@ Files:
 - `app/src/main/java/twitterdev/airquality/NetworkRequest.java`
 - `app/src/test/java/twitterdev/airquality/NetworkRequestTest.java`
 
-Add a package-visible parser that treats a missing field as unknown length,
-accepts ASCII decimal digits, detects `long` overflow without permissive Java
-number syntax, and returns the parsed length. Cover zero, the exact response
-limit, `Long.MAX_VALUE`, signs, whitespace, separators, non-ASCII digits,
-empty values, and overflow.
+Add a package-visible parser that accepts supplied ASCII decimal digits,
+detects `long` overflow without permissive Java number syntax, and returns the
+parsed length. Cover zero, the exact response limit, `Long.MAX_VALUE`, null,
+signs, whitespace, separators, non-ASCII digits, empty values, and overflow.
 
 ### 2. Enforce one header before body access
 
@@ -61,12 +60,18 @@ documentation, and completed verification in the portable checker.
 
 ## Verification
 
-To be recorded after implementation:
+Completed on 2026-06-14:
 
-- Focused `NetworkRequestTest` execution under Java 8 and the configured SDK.
-- Full SDK-backed and external-directory `make check` runs.
-- Isolated parser, duplicate-header, ordering, test, documentation, and plan
-  mutations.
+- The focused `NetworkRequestTest` class passed all 13 tests on both debug and
+  release variants under Amazon Corretto 8 and the local Android API 22 SDK.
+- Full SDK-backed `make check` passed the portable contracts, legacy Android
+  lint baseline, debug and release unit tests, Java compilation, and debug APK
+  assembly. Lint retained its one existing `OldTargetApi` warning and no errors.
+- External-working-directory `make check` passed the root-independent portable
+  gate with Android SDK variables intentionally unset.
+- Eight isolated mutations were rejected when they removed ASCII-digit or
+  overflow validation, duplicate-header rejection, pre-body ordering, focused
+  test coverage, documentation, or completed plan evidence.
 
 ## Risks
 

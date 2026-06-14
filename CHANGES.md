@@ -14,6 +14,8 @@
 6. Added an exact-commit Android device verification matrix for permissions,
    location, lifecycle, backend failures, and privacy-safe evidence while
    retaining explicit `not run` results.
+7. Validated strict backend Content-Length syntax, duplicate fields, and numeric
+   overflow before opening response bodies.
 
 ## 2026-06-13
 

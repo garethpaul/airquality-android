@@ -45,9 +45,10 @@ Helpful reports include:
 - A separate hosted Java 8/API 22 job runs the complete Android gate, and the
   baseline pins and verifies the wrapper JAR and Gradle distribution checksums.
   An uncached bootstrap still depends on Gradle's HTTPS service.
-- Backend responses must reject malformed UTF-8, return 2xx, and remain no
-  larger than 1 MiB before JSON parsing; response streams and the legacy HTTP
-  connection manager must be closed.
+- Backend responses must reject malformed UTF-8, return 2xx, use strict Content-Length
+  syntax when supplied, and remain no larger than 1 MiB before
+  JSON parsing; response streams and the legacy HTTP connection manager must be
+  closed.
 - Backend requests reject automatic redirects so intermediaries cannot move the
   fixed HTTPS request to another transport target.
 - Validated location values are serialized as canonical decimal coordinates so

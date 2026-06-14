@@ -121,6 +121,26 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
         }
     }
 
+    static long parseContentLength(String contentLength) throws IOException {
+        if (contentLength == null || contentLength.length() == 0) {
+            throw new IOException("Air quality response Content-Length is invalid");
+        }
+
+        long parsedLength = 0;
+        for (int index = 0; index < contentLength.length(); index++) {
+            char character = contentLength.charAt(index);
+            if (character < '0' || character > '9') {
+                throw new IOException("Air quality response Content-Length is invalid");
+            }
+            int digit = character - '0';
+            if (parsedLength > (Long.MAX_VALUE - digit) / 10) {
+                throw new IOException("Air quality response Content-Length is invalid");
+            }
+            parsedLength = parsedLength * 10 + digit;
+        }
+        return parsedLength;
+    }
+
     private static boolean isMimeToken(String value) {
         if (value.length() == 0) {
             return false;
@@ -149,7 +169,17 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
         }
         Header contentType = entity.getContentType();
         requireJsonMediaType(contentType == null ? null : contentType.getValue());
-        if (entity.getContentLength() > RESPONSE_MAX_BYTES) {
+        Header[] contentLengthHeaders = response.getHeaders("Content-Length");
+        if (contentLengthHeaders.length > 1) {
+            throw new IOException("Air quality response Content-Length is invalid");
+        }
+        long contentLength = contentLengthHeaders.length == 1
+                ? parseContentLength(contentLengthHeaders[0].getValue())
+                : entity.getContentLength();
+        if (contentLength < -1) {
+            throw new IOException("Air quality response Content-Length is invalid");
+        }
+        if (contentLength > RESPONSE_MAX_BYTES) {
             throw new IOException("Air quality response is too large");
         }
 

@@ -27,6 +27,7 @@ Priority:
 - Keep backend request timeouts wired into the HTTP client that actually executes
   the request
 - Bound backend response bytes and reject non-2xx responses before JSON parsing
+- Strict backend Content-Length validation before response body access
 - Reject automatic backend redirects away from the fixed HTTPS endpoint
 - Require JSON application media types before reading backend response bodies
 - Reject malformed UTF-8 backend responses before JSON parsing

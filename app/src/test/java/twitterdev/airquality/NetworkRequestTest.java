@@ -97,6 +97,27 @@ public class NetworkRequestTest {
         assertInvalidMediaType("text/html");
     }
 
+    @Test
+    public void parseContentLengthAcceptsAsciiDecimalValues() throws IOException {
+        assertEquals(0L, NetworkRequest.parseContentLength("0"));
+        assertEquals(1048576L, NetworkRequest.parseContentLength("1048576"));
+        assertEquals(Long.MAX_VALUE, NetworkRequest.parseContentLength("9223372036854775807"));
+    }
+
+    @Test
+    public void parseContentLengthRejectsMalformedAndOverflowingValues() {
+        assertInvalidContentLength(null);
+        assertInvalidContentLength("");
+        assertInvalidContentLength("+1");
+        assertInvalidContentLength("-1");
+        assertInvalidContentLength(" 1");
+        assertInvalidContentLength("1 ");
+        assertInvalidContentLength("1_0");
+        assertInvalidContentLength("1, 2");
+        assertInvalidContentLength("\u0661");
+        assertInvalidContentLength("9223372036854775808");
+    }
+
     private void assertInvalidCoordinate(String lat, String lng) {
         try {
             NetworkRequest.buildUrl(lat, lng);
@@ -119,6 +140,15 @@ public class NetworkRequestTest {
         try {
             NetworkRequest.requireJsonMediaType(contentType);
             fail("Expected invalid response media type to be rejected");
+        } catch (IOException expected) {
+            // Expected path.
+        }
+    }
+
+    private void assertInvalidContentLength(String contentLength) {
+        try {
+            NetworkRequest.parseContentLength(contentLength);
+            fail("Expected invalid Content-Length to be rejected");
         } catch (IOException expected) {
             // Expected path.
         }

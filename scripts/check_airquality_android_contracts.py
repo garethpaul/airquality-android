@@ -190,6 +190,9 @@ def main():
     device_verification_plan = read_text(
         "docs/plans/2026-06-14-device-verification-checklist.md"
     )
+    content_length_plan = read_text(
+        "docs/plans/2026-06-14-strict-content-length-validation.md"
+    )
     device_verification = read_text("DEVICE_VERIFICATION.md")
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
@@ -456,9 +459,25 @@ def main():
         failures,
     )
     require(
-        "entity.getContentLength() > RESPONSE_MAX_BYTES" in network
+        "contentLength > RESPONSE_MAX_BYTES" in network
         and "totalBytes > RESPONSE_MAX_BYTES" in network,
         "NetworkRequest must enforce declared and streamed response size limits",
+        failures,
+    )
+    require(
+        "static long parseContentLength(String contentLength) throws IOException"
+        in network
+        and "character < '0' || character > '9'" in network
+        and "parsedLength > (Long.MAX_VALUE - digit) / 10" in network,
+        "NetworkRequest must parse Content-Length as overflow-safe ASCII digits",
+        failures,
+    )
+    require(
+        'response.getHeaders("Content-Length")' in network
+        and "contentLengthHeaders.length > 1" in network
+        and "contentLengthHeaders.length == 1" in network
+        and "contentLength < -1" in network,
+        "NetworkRequest must reject duplicate or invalid declared lengths",
         failures,
     )
     require(
@@ -481,10 +500,21 @@ def main():
             "HttpEntity entity = response.getEntity();",
             "Header contentType = entity.getContentType();",
             "requireJsonMediaType(contentType == null ? null : contentType.getValue());",
-            "entity.getContentLength()",
+            'response.getHeaders("Content-Length")',
+            "parseContentLength(contentLengthHeaders[0].getValue())",
             "entity.getContent();",
         ),
-        "NetworkRequest must validate media type before length and body access",
+        "NetworkRequest must validate media type and length before body access",
+        failures,
+    )
+    require(
+        "parseContentLengthAcceptsAsciiDecimalValues" in network_tests
+        and "parseContentLengthRejectsMalformedAndOverflowingValues" in network_tests
+        and "assertInvalidContentLength(null)" in network_tests
+        and 'assertInvalidContentLength("1_0")' in network_tests
+        and 'assertInvalidContentLength("1, 2")' in network_tests
+        and 'assertInvalidContentLength("9223372036854775808")' in network_tests,
+        "NetworkRequestTest must cover strict Content-Length parsing",
         failures,
     )
     require(
@@ -844,6 +874,21 @@ def main():
         and "make check" in media_type_plan
         and "mutations" in media_type_plan.lower(),
         "JSON response media type plan must record completed verification",
+        failures,
+    )
+    require(
+        "Status: Completed" in content_length_plan
+        and "make check" in content_length_plan
+        and "mutations" in content_length_plan.lower(),
+        "strict Content-Length plan must record completed verification",
+        failures,
+    )
+    require(
+        "strict Content-Length" in readme
+        and "strict Content-Length" in security
+        and "Strict backend Content-Length" in vision
+        and "Validated strict backend Content-Length" in changes,
+        "strict Content-Length validation must remain documented",
         failures,
     )
     require(
