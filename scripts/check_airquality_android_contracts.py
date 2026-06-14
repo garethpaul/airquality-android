@@ -187,6 +187,10 @@ def main():
     coordinate_serialization_plan = read_text(
         "docs/plans/2026-06-14-canonical-coordinate-serialization.md"
     )
+    device_verification_plan = read_text(
+        "docs/plans/2026-06-14-device-verification-checklist.md"
+    )
+    device_verification = read_text("DEVICE_VERIFICATION.md")
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
     makefile_lines = set(makefile.splitlines())
@@ -940,6 +944,40 @@ def main():
             f"{name} must record the GitHub Actions CI baseline",
             failures,
         )
+
+    for contract in (
+        "commit SHA and pull request",
+        "./gradlew lint test assembleDebug --no-daemon",
+        "Location permission denied",
+        "Pause during request",
+        "Rotate during backend request",
+        "Process recreation",
+        "malformed UTF-8 and malformed JSON",
+        "Do not convert `not run` into a passing result.",
+        "latitude, longitude, request URLs",
+        "currently records the matrix as unexecuted",
+    ):
+        require(
+            contract in device_verification,
+            f"Device verification checklist must keep contract: {contract}",
+            failures,
+        )
+    require(
+        "DEVICE_VERIFICATION.md" in readme
+        and "unexecuted scenarios explicit" in readme
+        and "device verification matrix" in vision.lower()
+        and "explicit `not run` results" in changes,
+        "Repository guidance must document the unexecuted device matrix",
+        failures,
+    )
+    require(
+        "Status: Completed" in device_verification_plan
+        and "make check" in device_verification_plan
+        and "hostile mutations" in device_verification_plan
+        and "No emulator or physical-device scenario was executed" in device_verification_plan,
+        "Device verification plan must record completed portable evidence and runtime non-claims",
+        failures,
+    )
     require(
         "docs/plans/2026-06-10-ci-baseline.md" in readme,
         "README must link the CI baseline plan",

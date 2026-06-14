@@ -53,6 +53,8 @@ Priority:
 - Keep GitHub Actions aligned with the SDK-free Python `make check` baseline
 - Keep the legacy Gradle runtime behind a checksum-verified generated wrapper
 - Keep a separate hosted Java 8/API 22 job for complete Android verification
+- Keep exact-commit emulator and physical-device evidence separate from static
+  contracts, with unexecuted lifecycle and permission scenarios recorded
 
 Next priorities:
 
@@ -61,6 +63,8 @@ Next priorities:
 - Replace deprecated Fabric/Twitter login dependencies with maintained options
 - Move synchronous networking and Apache HTTP usage to modern Android APIs
 - Add tests around URL construction, location handling, and failure states
+- Execute the device verification matrix on an authorized emulator and
+  physical device with sanitized evidence
 
 Contribution rules:
 

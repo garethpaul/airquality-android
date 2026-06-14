@@ -1,6 +1,6 @@
 # Android Device Verification Checklist
 
-Status: In Progress
+Status: Completed
 
 ## Problem
 
@@ -26,4 +26,12 @@ that the legacy application works under Android lifecycle and permission events.
 
 ## Verification
 
-- Pending implementation and bounded repository validation.
+- `python3 -m py_compile scripts/check_airquality_android_contracts.py` and the
+  focused contract checker passed.
+- Repository-root and external-working-directory `make check` passed the
+  portable contract gate and retained the existing bounded SDK behavior.
+- Twelve hostile mutations were rejected for removing the checklist, exact
+  commit evidence, build command, permission, lifecycle, backend, privacy,
+  unexecuted-result, documentation, or completed-plan contracts.
+- No emulator or physical-device scenario was executed; every runtime matrix
+  row remains truthfully marked `not run`.

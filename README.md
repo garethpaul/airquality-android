@@ -65,6 +65,12 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
+Use [`DEVICE_VERIFICATION.md`](DEVICE_VERIFICATION.md) for the emulator or
+physical-device matrix. It requires exact-commit toolchain evidence for launch,
+permissions, location, lifecycle, backend failures, and log redaction, and it
+keeps unexecuted scenarios explicit rather than treating static checks as
+device proof.
+
 ## Configuration and Secrets
 
 - Detected references to Twitter. Keep API keys, OAuth credentials, tokens, and account-specific values in local configuration only.
@@ -156,6 +162,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   background request invalidation and interrupted-request resume behavior.
 - See `docs/plans/2026-06-13-failed-air-quality-request-resume-retry.md` for
   failed-request retry preservation across pause and resume.
+- See `docs/plans/2026-06-14-device-verification-checklist.md` for the
+  device-evidence matrix and its explicit unexecuted boundary.
 
 ## Contributing
 

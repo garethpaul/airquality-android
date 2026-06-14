@@ -11,6 +11,9 @@
    access, strict UTF-8 decoding, and JSON parsing.
 5. Canonicalized validated coordinates before URL encoding so Java-only numeric
    syntax is not forwarded to the backend parser.
+6. Added an exact-commit Android device verification matrix for permissions,
+   location, lifecycle, backend failures, and privacy-safe evidence while
+   retaining explicit `not run` results.
 
 ## 2026-06-13
 
