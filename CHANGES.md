@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-14
+
+1. Rejected malformed UTF-8 backend responses after enforcing the existing
+   response byte limit and before JSON parsing.
+2. Added focused Java and portable contracts for strict UTF-8 decoding.
+
 ## 2026-06-13
 
 1. Replaced throwable-bearing warnings with generic NetworkRequest failure logs

@@ -2,6 +2,9 @@ package twitterdev.airquality;
 
 import org.junit.Test;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -48,6 +51,24 @@ public class NetworkRequestTest {
         assertInvalidCoordinate("37.7", "Infinity");
         assertInvalidCoordinate("91", "-122.4");
         assertInvalidCoordinate("37.7", "-181");
+    }
+
+    @Test
+    public void decodeUtf8PreservesValidJson() throws IOException {
+        assertEquals(
+                "{\"results\":[]}",
+                NetworkRequest.decodeUtf8(
+                        "{\"results\":[]}".getBytes(StandardCharsets.UTF_8)));
+    }
+
+    @Test
+    public void decodeUtf8RejectsMalformedInput() {
+        try {
+            NetworkRequest.decodeUtf8(new byte[] {(byte) 0xC3, 0x28});
+            fail("Expected malformed UTF-8 to be rejected");
+        } catch (IOException expected) {
+            // Expected path.
+        }
     }
 
     private void assertInvalidCoordinate(String lat, String lng) {

@@ -175,6 +175,9 @@ def main():
     make_root_plan = read_text(
         "docs/plans/2026-06-14-make-root-override-protection.md"
     )
+    strict_utf8_plan = read_text(
+        "docs/plans/2026-06-14-strict-response-utf8-decoding.md"
+    )
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
     makefile_lines = set(makefile.splitlines())
@@ -422,8 +425,24 @@ def main():
         failures,
     )
     require(
-        'return output.toString("UTF-8")' in network
-        and "input.close()" in network
+        "static String decodeUtf8(byte[] bytes) throws IOException" in network
+        and "StandardCharsets.UTF_8.newDecoder()" in network
+        and ".onMalformedInput(CodingErrorAction.REPORT)" in network
+        and ".onUnmappableCharacter(CodingErrorAction.REPORT)" in network
+        and ".decode(ByteBuffer.wrap(bytes))" in network
+        and "return decodeUtf8(output.toByteArray());" in network
+        and 'output.toString("UTF-8")' not in network,
+        "NetworkRequest must reject malformed UTF-8 after bounding response bytes",
+        failures,
+    )
+    require(
+        "decodeUtf8PreservesValidJson" in network_tests
+        and "decodeUtf8RejectsMalformedInput" in network_tests,
+        "NetworkRequest strict UTF-8 behavior must retain focused unit coverage",
+        failures,
+    )
+    require(
+        "input.close()" in network
         and "httpclient.getConnectionManager().shutdown()" in network,
         "NetworkRequest must close response and connection resources after bounded UTF-8 decoding",
         failures,
@@ -713,6 +732,21 @@ def main():
         and "make check" in make_root_plan
         and "mutations" in make_root_plan.lower(),
         "Make root protection plan must record completed verification",
+        failures,
+    )
+    require(
+        "Status: Completed" in strict_utf8_plan
+        and "make check" in strict_utf8_plan
+        and "mutations" in strict_utf8_plan.lower(),
+        "strict response UTF-8 plan must record completed verification",
+        failures,
+    )
+    require(
+        "rejects malformed UTF-8" in readme
+        and "reject malformed UTF-8" in security
+        and "Reject malformed UTF-8" in vision
+        and "Rejected malformed UTF-8 backend responses" in changes,
+        "strict backend response UTF-8 decoding must remain documented",
         failures,
     )
     require(
