@@ -73,8 +73,9 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - `NetworkRequest.buildUrl` trims, validates, and URL-encodes latitude and longitude before constructing the backend request.
 - `NetworkRequest.buildUrlFromParams` validates the `AsyncTask` parameter array before the background request path creates an HTTP request.
 - `NetworkRequest` applies bounded connection and socket timeouts to the HTTP client used for the backend request.
-- `NetworkRequest` accepts only 2xx responses, reads at most 1 MiB, and closes
-  response and connection resources before JSON handling.
+- `NetworkRequest` accepts only 2xx responses and rejects malformed UTF-8 after
+  reading at most 1 MiB; it closes response and connection resources before
+  JSON handling.
 - Generic NetworkRequest failure logs preserve protocol, JSON, and parameter
   categories without recording throwable stack traces, coordinate-bearing
   request URLs, or provider exception details.

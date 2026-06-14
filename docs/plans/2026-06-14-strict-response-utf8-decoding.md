@@ -1,6 +1,6 @@
 # Strict Response UTF-8 Decoding
 
-Status: Planned
+Status: Completed
 
 ## Problem
 
@@ -37,18 +37,26 @@ Keep stream ownership and all request behavior unchanged.
 
 Extend the portable checker with source, unit-test, documentation, required
 plan, and completed-status contracts. Document strict provider response
-decoding in the maintenance, security, and project-priority guidance.
+decoding in the maintenance, security, project-priority, and change guidance.
 
 ## Verification
 
-- Run the focused checker and Java regression where the Android toolchain is
-  available.
-- Run bounded `make check` gates from the repository root and an external
-  working directory.
-- Reject focused mutations for decoder error actions, helper use, regression
-  names, documentation, plan presence, and completed plan status.
-- Run Java/Python/Gradle/XML syntax-oriented checks, `git diff --check`, and
-  explicit secret and generated-artifact audits.
+Completed on 2026-06-14:
+
+- The two focused JUnit calls first failed compilation because `decodeUtf8`
+  did not exist, then the complete Gradle unit-test task passed after the
+  strict decoder was implemented.
+- The portable checker passed against an unmodified disposable copy with this
+  plan marked complete.
+- Eight focused mutations were rejected: malformed-input action,
+  unmappable-input action, strict-helper use, regression name, documentation,
+  changelog documentation, completed plan status, and plan presence.
+- Python compilation and `git diff --check` passed before the full repository
+  gates.
+- Bounded SDK-backed `make check` passed from the repository root and from
+  `/tmp` through the absolute Makefile path. Both runs passed portable
+  contracts, Android lint, debug and release unit tests, and debug assembly;
+  Android lint retained one existing non-fatal issue in each variant.
 
 ## Scope Boundaries
 

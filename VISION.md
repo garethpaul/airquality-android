@@ -27,6 +27,7 @@ Priority:
 - Keep backend request timeouts wired into the HTTP client that actually executes
   the request
 - Bound backend response bytes and reject non-2xx responses before JSON parsing
+- Reject malformed UTF-8 backend responses before JSON parsing
 - Cancel activity-owned backend requests during teardown and ignore stale
   completion callbacks
 - Keep location-gated backend requests from using default coordinates and stop

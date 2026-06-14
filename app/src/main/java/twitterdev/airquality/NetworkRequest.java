@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.ByteBuffer;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
 
 public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
     private static final String TAG = "NetworkRequest";
@@ -81,6 +84,14 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
         }
     }
 
+    static String decodeUtf8(byte[] bytes) throws IOException {
+        return StandardCharsets.UTF_8.newDecoder()
+                .onMalformedInput(CodingErrorAction.REPORT)
+                .onUnmappableCharacter(CodingErrorAction.REPORT)
+                .decode(ByteBuffer.wrap(bytes))
+                .toString();
+    }
+
     static String readResponseBody(HttpResponse response) throws IOException {
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode < 200 || statusCode >= 300) {
@@ -108,7 +119,7 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
                 }
                 output.write(buffer, 0, bytesRead);
             }
-            return output.toString("UTF-8");
+            return decodeUtf8(output.toByteArray());
         } finally {
             input.close();
         }

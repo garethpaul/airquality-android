@@ -45,8 +45,9 @@ Helpful reports include:
 - A separate hosted Java 8/API 22 job runs the complete Android gate, and the
   baseline pins and verifies the wrapper JAR and Gradle distribution checksums.
   An uncached bootstrap still depends on Gradle's HTTPS service.
-- Backend responses must be 2xx and no larger than 1 MiB before JSON parsing;
-  response streams and the legacy HTTP connection manager must be closed.
+- Backend responses must reject malformed UTF-8, return 2xx, and remain no
+  larger than 1 MiB before JSON parsing; response streams and the legacy HTTP
+  connection manager must be closed.
 - Generic NetworkRequest failure logs retain only stable protocol, JSON, and
   parameter categories. They do not pass dependency throwables to logcat,
   where stack traces or messages could expose coordinates, request URLs, or
