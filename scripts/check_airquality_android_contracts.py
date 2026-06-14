@@ -178,6 +178,9 @@ def main():
     strict_utf8_plan = read_text(
         "docs/plans/2026-06-14-strict-response-utf8-decoding.md"
     )
+    redirect_plan = read_text(
+        "docs/plans/2026-06-14-disable-air-quality-http-redirects.md"
+    )
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
     makefile_lines = set(makefile.splitlines())
@@ -405,6 +408,16 @@ def main():
         and "new DefaultHttpClient(httpParams)" in network
         and "new DefaultHttpClient(p)" not in network,
         "NetworkRequest must apply request timeouts to the actual HTTP client",
+        failures,
+    )
+    require(
+        "HttpClientParams.setRedirecting(httpParams, false);" in network
+        and contains_in_order(
+            network,
+            "HttpClientParams.setRedirecting(httpParams, false);",
+            "new DefaultHttpClient(httpParams)",
+        ),
+        "NetworkRequest must disable redirects before constructing the HTTP client",
         failures,
     )
     require(
@@ -739,6 +752,21 @@ def main():
         and "make check" in strict_utf8_plan
         and "mutations" in strict_utf8_plan.lower(),
         "strict response UTF-8 plan must record completed verification",
+        failures,
+    )
+    require(
+        "Status: Completed" in redirect_plan
+        and "make check" in redirect_plan
+        and "mutations" in redirect_plan.lower(),
+        "HTTP redirect rejection plan must record completed verification",
+        failures,
+    )
+    require(
+        "rejects automatic redirects" in readme
+        and "reject automatic redirects" in security
+        and "Reject automatic backend redirects" in vision
+        and "Disabled automatic backend redirects" in changes,
+        "HTTP redirect rejection must remain documented",
         failures,
     )
     require(
