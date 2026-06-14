@@ -1,6 +1,6 @@
 # Require JSON Air Quality Media Types
 
-Status: Planned
+Status: Completed
 
 ## Context
 
@@ -64,15 +64,21 @@ parameterized and structured-suffix JSON responses.
 
 ## Verification
 
-- Run focused `NetworkRequestTest` coverage and the full SDK-backed project
-  gate.
-- Run the portable gate from the repository root and an external working
-  directory.
-- Reject isolated mutations that remove validation, weaken the accepted type
-  policy, move validation after body access, remove focused tests, or leave
-  this plan incomplete.
-- Audit the exact diff, generated artifacts, credentials, conflict markers,
-  and whitespace before committing implementation.
+Completed on 2026-06-14:
+
+- Focused `NetworkRequestTest` coverage passed under Amazon Corretto 8 with the
+  local Android API 22 SDK, including accepted parameterized and structured
+  JSON types and rejected missing, ambiguous, malformed, non-ASCII, and
+  non-JSON values.
+- Full SDK-backed `make check` passed the portable contracts, legacy Android
+  lint baseline, debug and release unit tests, Java compilation, and debug APK
+  assembly under Amazon Corretto 8 and the local Android SDK.
+- External-working-directory `make check` passed the root-independent portable
+  gate and truthfully skipped the Android build with SDK variables unset.
+- Seven focused mutations were rejected when they removed validation, accepted
+  non-application or comma-joined values, weakened the structured suffix or
+  ASCII token policy, removed focused rejection coverage, or reopened this
+  plan.
 
 ## Risks
 

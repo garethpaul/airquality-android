@@ -7,6 +7,8 @@
 2. Added focused Java and portable contracts for strict UTF-8 decoding.
 3. Disabled automatic backend redirects so the fixed HTTPS endpoint remains the
    only request target before response status validation.
+4. Required JSON application media types before response length checks, body
+   access, strict UTF-8 decoding, and JSON parsing.
 
 ## 2026-06-13
 

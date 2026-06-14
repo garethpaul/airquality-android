@@ -75,6 +75,9 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - `NetworkRequest` applies bounded connection and socket timeouts to the HTTP client used for the backend request.
 - `NetworkRequest` rejects automatic redirects so the fixed HTTPS backend is
   the only transport target.
+- `NetworkRequest` requires JSON response media types, accepting parameterized
+  `application/json` and structured `application/*+json` values while rejecting
+  missing, ambiguous, malformed, or non-JSON types before body access.
 - `NetworkRequest` accepts only 2xx responses and rejects malformed UTF-8 after
   reading at most 1 MiB; it closes response and connection resources before
   JSON handling.

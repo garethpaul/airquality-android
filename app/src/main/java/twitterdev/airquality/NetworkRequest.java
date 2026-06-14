@@ -3,6 +3,7 @@ package twitterdev.airquality;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.apache.http.Header;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.HttpEntity;
@@ -24,6 +25,7 @@ import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
     private static final String TAG = "NetworkRequest";
@@ -93,6 +95,48 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
                 .toString();
     }
 
+    static void requireJsonMediaType(String contentType) throws IOException {
+        if (contentType == null || contentType.indexOf(',') >= 0) {
+            throw new IOException("Air quality response media type is invalid");
+        }
+
+        int parameterStart = contentType.indexOf(';');
+        String mediaType = (parameterStart >= 0
+                ? contentType.substring(0, parameterStart)
+                : contentType).trim().toLowerCase(Locale.US);
+        int separator = mediaType.indexOf('/');
+        if (separator <= 0 || separator != mediaType.lastIndexOf('/')) {
+            throw new IOException("Air quality response media type is invalid");
+        }
+
+        String type = mediaType.substring(0, separator);
+        String subtype = mediaType.substring(separator + 1);
+        boolean jsonSubtype = "json".equals(subtype)
+                || (subtype.length() > "+json".length() && subtype.endsWith("+json"));
+        if (!"application".equals(type)
+                || !isMimeToken(type)
+                || !isMimeToken(subtype)
+                || !jsonSubtype) {
+            throw new IOException("Air quality response media type is invalid");
+        }
+    }
+
+    private static boolean isMimeToken(String value) {
+        if (value.length() == 0) {
+            return false;
+        }
+
+        for (int index = 0; index < value.length(); index++) {
+            char character = value.charAt(index);
+            if (!((character >= 'a' && character <= 'z')
+                    || (character >= '0' && character <= '9')
+                    || "!#$%&'*+-.^_`|~".indexOf(character) >= 0)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     static String readResponseBody(HttpResponse response) throws IOException {
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode < 200 || statusCode >= 300) {
@@ -103,6 +147,8 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
         if (entity == null) {
             throw new IOException("Air quality response body is missing");
         }
+        Header contentType = entity.getContentType();
+        requireJsonMediaType(contentType == null ? null : contentType.getValue());
         if (entity.getContentLength() > RESPONSE_MAX_BYTES) {
             throw new IOException("Air quality response is too large");
         }
