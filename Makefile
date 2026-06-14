@@ -1,5 +1,5 @@
 PYTHON ?= python3
-ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+override ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 GRADLE ?= $(ROOT)/gradlew
 CHECK_SCRIPT := $(ROOT)/scripts/check_airquality_android_contracts.py
 

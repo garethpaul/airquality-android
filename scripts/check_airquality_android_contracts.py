@@ -172,8 +172,12 @@ def main():
     failed_request_retry_plan = read_text(
         "docs/plans/2026-06-13-failed-air-quality-request-resume-retry.md"
     )
+    make_root_plan = read_text(
+        "docs/plans/2026-06-14-make-root-override-protection.md"
+    )
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
+    makefile_lines = set(makefile.splitlines())
     readme = read_text("README.md")
     vision = read_text("VISION.md")
     security = read_text("SECURITY.md")
@@ -554,10 +558,12 @@ def main():
         failures,
     )
     require(
-        "ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))" in makefile
-        and "GRADLE ?= $(ROOT)/gradlew" in makefile
+        "override ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))"
+        in makefile_lines
+        and "PYTHON ?= python3" in makefile_lines
+        and "GRADLE ?= $(ROOT)/gradlew" in makefile_lines
         and "CHECK_SCRIPT := $(ROOT)/scripts/check_airquality_android_contracts.py"
-        in makefile
+        in makefile_lines
         and 'cd "$(ROOT)" && "$(GRADLE)"' in makefile,
         "Makefile must run SDK-free and Gradle checks from the repository root",
         failures,
@@ -700,6 +706,13 @@ def main():
         and "make check" in failed_request_retry_plan
         and "hostile mutations" in failed_request_retry_plan.lower(),
         "failed request resume retry plan must record completed verification",
+        failures,
+    )
+    require(
+        "Status: Completed" in make_root_plan
+        and "make check" in make_root_plan
+        and "mutations" in make_root_plan.lower(),
+        "Make root protection plan must record completed verification",
         failures,
     )
     require(
