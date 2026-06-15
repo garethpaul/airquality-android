@@ -58,7 +58,7 @@ state and valid strings retain current behavior.
 ### U2: Keep SDK-free contracts and guidance synchronized
 
 **Files:** `scripts/check_airquality_android_contracts.py`, `README.md`,
-`SECURITY.md`, `AGENTS.md`, `CHANGES.md`,
+`SECURITY.md`, `VISION.md`, `CHANGES.md`,
 `docs/plans/2026-06-15-string-air-quality-state-validation.md`
 
 **Approach:** Register the raw-value type guard, malformed-type fixtures,
