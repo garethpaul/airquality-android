@@ -30,6 +30,7 @@ Priority:
 - Strict backend Content-Length validation before response body access
 - Reject automatic backend redirects away from the fixed HTTPS endpoint
 - Require JSON application media types before reading backend response bodies
+- Backend responses must contain exactly one Content-Type header before body access.
 - Response charset metadata must be absent or unambiguous UTF-8 before body
   decoding
 - Quoted Content-Type parameter values may contain commas while unquoted or

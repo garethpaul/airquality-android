@@ -123,6 +123,13 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
         requireUtf8MediaTypeParameters(contentType, parameterStart);
     }
 
+    static void requireSingleJsonMediaType(String... contentTypes) throws IOException {
+        if (contentTypes == null || contentTypes.length != 1) {
+            throw new IOException("Air quality response media type is invalid");
+        }
+        requireJsonMediaType(contentTypes[0]);
+    }
+
     private static void requireUtf8MediaTypeParameters(
             String contentType, int parameterStart) throws IOException {
         if (parameterStart < 0) {
@@ -262,8 +269,12 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
         if (entity == null) {
             throw new IOException("Air quality response body is missing");
         }
-        Header contentType = entity.getContentType();
-        requireJsonMediaType(contentType == null ? null : contentType.getValue());
+        Header[] contentTypeHeaders = response.getHeaders("Content-Type");
+        String[] contentTypes = new String[contentTypeHeaders.length];
+        for (int index = 0; index < contentTypeHeaders.length; index++) {
+            contentTypes[index] = contentTypeHeaders[index].getValue();
+        }
+        requireSingleJsonMediaType(contentTypes);
         Header[] contentLengthHeaders = response.getHeaders("Content-Length");
         if (contentLengthHeaders.length > 1) {
             throw new IOException("Air quality response Content-Length is invalid");

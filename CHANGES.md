@@ -8,6 +8,7 @@
 1. MainActivity trims surrounding whitespace from nonblank air_quality strings.
 1. Quoted Content-Type parameter values may contain commas while unquoted or
    combined comma values remain invalid.
+1. Backend responses must contain exactly one Content-Type header before body access.
 1. Response charset metadata must be absent or unambiguous UTF-8 before the
    backend body is read and strictly decoded.
 

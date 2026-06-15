@@ -203,6 +203,9 @@ def main():
     quoted_comma_plan = read_text(
         "docs/plans/2026-06-15-quoted-content-type-commas.md"
     )
+    duplicate_content_type_plan = read_text(
+        "docs/plans/2026-06-15-duplicate-content-type-headers.md"
+    )
     state_validation_plan = read_text(
         "docs/plans/2026-06-15-string-air-quality-state-validation.md"
     )
@@ -510,6 +513,14 @@ def main():
         failures,
     )
     require(
+        "static void requireSingleJsonMediaType(String... contentTypes) throws IOException"
+        in network
+        and "contentTypes == null || contentTypes.length != 1" in network
+        and "requireJsonMediaType(contentTypes[0])" in network,
+        "NetworkRequest must reject missing or duplicate Content-Type headers",
+        failures,
+    )
+    require(
         "requireUtf8MediaTypeParameters(contentType, parameterStart)" in network
         and "boolean charsetSeen = false;" in network
         and '"charset".equals(name)' in network
@@ -523,13 +534,24 @@ def main():
         contains_in_order(
             network,
             "HttpEntity entity = response.getEntity();",
-            "Header contentType = entity.getContentType();",
-            "requireJsonMediaType(contentType == null ? null : contentType.getValue());",
+            'response.getHeaders("Content-Type")',
+            "contentTypes[index] = contentTypeHeaders[index].getValue();",
+            "requireSingleJsonMediaType(contentTypes);",
             'response.getHeaders("Content-Length")',
             "parseContentLength(contentLengthHeaders[0].getValue())",
             "entity.getContent();",
         ),
         "NetworkRequest must validate media type and length before body access",
+        failures,
+    )
+    require(
+        "requireSingleJsonMediaTypeRejectsAmbiguousHeaders" in network_tests
+        and 'requireSingleJsonMediaType("application/json")' in network_tests
+        and 'assertInvalidResponseMediaType("application/json", "application/json")'
+        in network_tests
+        and 'assertInvalidResponseMediaType("application/json", "text/html")'
+        in network_tests,
+        "NetworkRequestTest must cover missing and duplicate Content-Type headers",
         failures,
     )
     require(
@@ -1071,6 +1093,32 @@ def main():
         "quoted Content-Type comma plan must record completed verification",
         failures,
     )
+    for contract in (
+        "status: completed",
+        "requireSingleJsonMediaTypeRejectsAmbiguousHeaders",
+        "make check",
+        "isolated hostile mutations",
+        "secret and generated-artifact scan",
+    ):
+        require(
+            contract in duplicate_content_type_plan,
+            f"Duplicate Content-Type plan must keep contract: {contract}",
+            failures,
+        )
+    duplicate_content_type_guidance = (
+        "Backend responses must contain exactly one Content-Type header before body access."
+    )
+    for document_name, document in (
+        ("README.md", readme),
+        ("SECURITY.md", security),
+        ("VISION.md", vision),
+        ("CHANGES.md", changes),
+    ):
+        require(
+            duplicate_content_type_guidance in document,
+            f"{document_name} must document duplicate Content-Type rejection",
+            failures,
+        )
     require(
         "strict Content-Length" in readme
         and "strict Content-Length" in security

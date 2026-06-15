@@ -133,6 +133,14 @@ public class NetworkRequestTest {
         assertInvalidContentLength("9223372036854775808");
     }
 
+    @Test
+    public void requireSingleJsonMediaTypeRejectsAmbiguousHeaders() throws IOException {
+        NetworkRequest.requireSingleJsonMediaType("application/json");
+        assertInvalidResponseMediaType();
+        assertInvalidResponseMediaType("application/json", "application/json");
+        assertInvalidResponseMediaType("application/json", "text/html");
+    }
+
     private void assertInvalidCoordinate(String lat, String lng) {
         try {
             NetworkRequest.buildUrl(lat, lng);
@@ -164,6 +172,15 @@ public class NetworkRequestTest {
         try {
             NetworkRequest.parseContentLength(contentLength);
             fail("Expected invalid Content-Length to be rejected");
+        } catch (IOException expected) {
+            // Expected path.
+        }
+    }
+
+    private void assertInvalidResponseMediaType(String... contentTypes) {
+        try {
+            NetworkRequest.requireSingleJsonMediaType(contentTypes);
+            fail("Expected ambiguous response media type headers to be rejected");
         } catch (IOException expected) {
             // Expected path.
         }

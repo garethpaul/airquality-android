@@ -86,6 +86,7 @@ device proof.
 - `NetworkRequest` requires JSON response media types, accepting parameterized
   `application/json` and structured `application/*+json` values while rejecting
   missing, ambiguous, malformed, or non-JSON types before body access.
+- Backend responses must contain exactly one Content-Type header before body access.
 - Response charset metadata must be absent or unambiguous UTF-8 so declared
   metadata agrees with the strict decoder used before JSON parsing.
 - Quoted Content-Type parameter values may contain commas; unquoted or combined

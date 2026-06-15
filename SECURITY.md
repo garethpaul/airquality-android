@@ -56,6 +56,7 @@ Helpful reports include:
 - Backend responses require JSON application media types before length checks
   or body access; missing, ambiguous, malformed, and non-JSON values fail
   closed without content sniffing.
+- Backend responses must contain exactly one Content-Type header before body access.
 - Response charset metadata must be absent or unambiguous UTF-8; malformed,
   duplicate, empty, and non-UTF-8 declarations fail before body access.
 - Quoted Content-Type parameter values may contain commas; unquoted or combined
