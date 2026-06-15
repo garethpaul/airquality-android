@@ -196,6 +196,9 @@ def main():
     charset_plan = read_text(
         "docs/plans/2026-06-15-json-response-charset-validation.md"
     )
+    quoted_comma_plan = read_text(
+        "docs/plans/2026-06-15-quoted-content-type-commas.md"
+    )
     device_verification = read_text("DEVICE_VERIFICATION.md")
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
@@ -486,7 +489,6 @@ def main():
     require(
         "static void requireJsonMediaType(String contentType) throws IOException"
         in network
-        and "contentType.indexOf(',') >= 0" in network
         and '"application".equals(type)' in network
         and '"json".equals(subtype)' in network
         and 'subtype.endsWith("+json")' in network
@@ -540,6 +542,14 @@ def main():
         in network_tests
         and 'assertInvalidMediaType("text/html")' in network_tests,
         "NetworkRequest JSON media type behavior must retain focused unit coverage",
+        failures,
+    )
+    require(
+        "contentType.indexOf(',')" not in network
+        and 'profile=\\"https://example.test/schema,a=b\\"' in network_tests
+        and 'assertInvalidMediaType("application/json, text/html")'
+        in network_tests,
+        "Content-Type comma handling must distinguish quoted data from combined values",
         failures,
     )
     require(
@@ -681,6 +691,14 @@ def main():
             for text in (readme, security, vision, changes)
         ),
         "Repository guidance must document response charset consistency",
+        failures,
+    )
+    require(
+        all(
+            "Quoted Content-Type parameter values may contain commas" in text
+            for text in (readme, security, vision, changes)
+        ),
+        "Repository guidance must document quote-aware Content-Type comma handling",
         failures,
     )
     require(
@@ -927,6 +945,15 @@ def main():
         and "hostile mutations" in charset_plan
         and "secret and generated-artifact scan" in charset_plan,
         "JSON response charset plan must record completed verification",
+        failures,
+    )
+    require(
+        "status: completed" in quoted_comma_plan
+        and "make check" in quoted_comma_plan
+        and "external working directory" in quoted_comma_plan
+        and "hostile mutations" in quoted_comma_plan
+        and "secret and generated-artifact scan" in quoted_comma_plan,
+        "quoted Content-Type comma plan must record completed verification",
         failures,
     )
     require(

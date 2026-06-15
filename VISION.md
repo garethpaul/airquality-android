@@ -32,6 +32,8 @@ Priority:
 - Require JSON application media types before reading backend response bodies
 - Response charset metadata must be absent or unambiguous UTF-8 before body
   decoding
+- Quoted Content-Type parameter values may contain commas while unquoted or
+  combined comma values remain invalid
 - Reject malformed UTF-8 backend responses before JSON parsing
 - Cancel activity-owned backend requests during teardown and ignore stale
   completion callbacks

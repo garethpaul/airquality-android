@@ -86,6 +86,8 @@ public class NetworkRequestTest {
         NetworkRequest.requireJsonMediaType(
                 "application/json ; profile=\"https://example.test/schema;a=b\" ; "
                         + "charset = \"UTF-8\"");
+        NetworkRequest.requireJsonMediaType(
+                "application/json; profile=\"https://example.test/schema,a=b\"");
         NetworkRequest.requireJsonMediaType("application/problem+json");
         NetworkRequest.requireJsonMediaType(" application/vnd.airquality.v1+json ");
     }

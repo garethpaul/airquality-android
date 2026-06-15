@@ -88,6 +88,8 @@ device proof.
   missing, ambiguous, malformed, or non-JSON types before body access.
 - Response charset metadata must be absent or unambiguous UTF-8 so declared
   metadata agrees with the strict decoder used before JSON parsing.
+- Quoted Content-Type parameter values may contain commas; unquoted or combined
+  comma values remain invalid.
 - `NetworkRequest` accepts only 2xx responses and rejects malformed UTF-8 after
   validating strict Content-Length syntax and reading at most 1 MiB; it closes
   response and connection resources before JSON handling.

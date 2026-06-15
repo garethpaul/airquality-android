@@ -96,7 +96,7 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
     }
 
     static void requireJsonMediaType(String contentType) throws IOException {
-        if (contentType == null || contentType.indexOf(',') >= 0) {
+        if (contentType == null) {
             throw new IOException("Air quality response media type is invalid");
         }
 

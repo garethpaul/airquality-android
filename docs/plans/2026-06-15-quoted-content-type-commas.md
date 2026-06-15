@@ -1,6 +1,6 @@
 # Quoted Content-Type Commas
 
-status: planned
+status: completed
 
 ## Context
 
@@ -66,3 +66,26 @@ negative fixture, documentation, and plan completion are rejected.
   documentation, and completed-plan evidence.
 - Audit the exact diff, generated artifacts, suspicious secret patterns,
   structured files, and whitespace before committing.
+
+## Work Completed
+
+- Removed the blanket comma rejection from Content-Type validation so the
+  existing quote-aware parameter parser owns delimiter decisions.
+- Added a valid quoted-comma parameter fixture while preserving the existing
+  combined unquoted comma rejection.
+- Updated portable contracts to require the source boundary, both fixtures,
+  maintained guidance, and completed plan evidence.
+
+## Verification Completed
+
+- The focused JVM media-type test failed at the new fixture before the source
+  change, then the positive and negative media-type tests passed together.
+- The full Android lint, test, and debug assembly gate passed under Java 8 and
+  API 22; all 13 NetworkRequest tests passed on debug and release variants and
+  Android lint retained one pre-existing warning with no errors.
+- Repository and external working directory `make check` gates passed.
+- Five isolated hostile mutations covering the blanket source precheck,
+  quoted-comma fixture, combined-value fixture, documentation, and completed
+  plan evidence were rejected; the restored checker passed.
+- Structured-file, exact-diff, whitespace, suspicious-secret, and
+  secret and generated-artifact scan passed.
