@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-15
+
+1. Response charset metadata must be absent or unambiguous UTF-8 before the
+   backend body is read and strictly decoded.
+
 ## 2026-06-14
 
 1. Rejected malformed UTF-8 backend responses after enforcing the existing

@@ -81,6 +81,11 @@ public class NetworkRequestTest {
     @Test
     public void requireJsonMediaTypeAcceptsJsonApplicationTypes() throws IOException {
         NetworkRequest.requireJsonMediaType("Application/JSON; charset=UTF-8");
+        NetworkRequest.requireJsonMediaType("application/json; charset=\"utf-8\"");
+        NetworkRequest.requireJsonMediaType("application/json; profile=v1");
+        NetworkRequest.requireJsonMediaType(
+                "application/json ; profile=\"https://example.test/schema;a=b\" ; "
+                        + "charset = \"UTF-8\"");
         NetworkRequest.requireJsonMediaType("application/problem+json");
         NetworkRequest.requireJsonMediaType(" application/vnd.airquality.v1+json ");
     }
@@ -93,6 +98,14 @@ public class NetworkRequestTest {
         assertInvalidMediaType("application/+json");
         assertInvalidMediaType("application/vnd api+json");
         assertInvalidMediaType("application/caf\u00e9+json");
+        assertInvalidMediaType("application/json;");
+        assertInvalidMediaType("application/json; charset");
+        assertInvalidMediaType("application/json; charset=");
+        assertInvalidMediaType("application/json; profile=");
+        assertInvalidMediaType("application/json; charset=ISO-8859-1");
+        assertInvalidMediaType("application/json; charset=UTF-8; charset=UTF-8");
+        assertInvalidMediaType("application/json; charset=UTF-8; charset=ISO-8859-1");
+        assertInvalidMediaType("application/json; profile=\"unterminated");
         assertInvalidMediaType("text/json");
         assertInvalidMediaType("text/html");
     }

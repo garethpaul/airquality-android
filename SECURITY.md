@@ -56,6 +56,8 @@ Helpful reports include:
 - Backend responses require JSON application media types before length checks
   or body access; missing, ambiguous, malformed, and non-JSON values fail
   closed without content sniffing.
+- Response charset metadata must be absent or unambiguous UTF-8; malformed,
+  duplicate, empty, and non-UTF-8 declarations fail before body access.
 - Generic NetworkRequest failure logs retain only stable protocol, JSON, and
   parameter categories. They do not pass dependency throwables to logcat,
   where stack traces or messages could expose coordinates, request URLs, or

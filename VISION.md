@@ -30,6 +30,8 @@ Priority:
 - Strict backend Content-Length validation before response body access
 - Reject automatic backend redirects away from the fixed HTTPS endpoint
 - Require JSON application media types before reading backend response bodies
+- Response charset metadata must be absent or unambiguous UTF-8 before body
+  decoding
 - Reject malformed UTF-8 backend responses before JSON parsing
 - Cancel activity-owned backend requests during teardown and ignore stale
   completion callbacks

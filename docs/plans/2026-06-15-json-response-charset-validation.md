@@ -1,6 +1,6 @@
 # JSON Response Charset Validation
 
-status: planned
+status: completed
 
 ## Context
 
@@ -53,3 +53,29 @@ creates a contradiction between trusted metadata and actual decoding.
   documentation, and completed plan evidence.
 - Audit the exact diff, generated artifacts, credential patterns, and
   whitespace before committing.
+
+## Work Completed
+
+- Added quote-aware parameter parsing that preserves syntactically valid
+  token and quoted values while rejecting malformed delimiters.
+- Required at most one charset declaration and accepted only case-insensitive
+  UTF-8 metadata before response body access.
+- Added JUnit coverage for quoted/unquoted UTF-8, optional whitespace, quoted
+  delimiters, malformed parameters, empty values, duplicate charsets, and
+  non-UTF-8 declarations.
+- Extended the portable checker and maintained guidance with the
+  charset-to-decoder consistency contract.
+
+## Verification Completed
+
+- Java 8 with the local API 22 Android SDK passed `./gradlew lint test
+  assembleDebug --no-daemon`; all 13 network-request tests passed for debug and
+  release, and the debug APK assembled successfully.
+- `make lint`, `make test`, `make verify`, and `make check` passed from the
+  repository root with SDK-free validation.
+- The complete `make check` gate passed from an external working directory
+  through the absolute Makefile path.
+- Focused hostile mutations to charset semantics, quote handling, tests,
+  documentation, and completed plan evidence were rejected.
+- `git diff --check` and the intended-path secret and generated-artifact scan
+  passed after explicit removal of local Gradle build outputs.

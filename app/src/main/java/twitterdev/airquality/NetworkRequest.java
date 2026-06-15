@@ -119,6 +119,101 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
                 || !jsonSubtype) {
             throw new IOException("Air quality response media type is invalid");
         }
+
+        requireUtf8MediaTypeParameters(contentType, parameterStart);
+    }
+
+    private static void requireUtf8MediaTypeParameters(
+            String contentType, int parameterStart) throws IOException {
+        if (parameterStart < 0) {
+            return;
+        }
+
+        boolean charsetSeen = false;
+        int index = parameterStart + 1;
+        while (index < contentType.length()) {
+            index = skipHttpWhitespace(contentType, index);
+            int nameStart = index;
+            while (index < contentType.length()
+                    && contentType.charAt(index) != '='
+                    && contentType.charAt(index) != ';') {
+                index++;
+            }
+            if (index >= contentType.length() || contentType.charAt(index) != '=') {
+                throw new IOException("Air quality response media type is invalid");
+            }
+
+            String name = contentType.substring(nameStart, index)
+                    .trim().toLowerCase(Locale.US);
+            if (!isMimeToken(name)) {
+                throw new IOException("Air quality response media type is invalid");
+            }
+
+            index = skipHttpWhitespace(contentType, index + 1);
+            StringBuilder value = new StringBuilder();
+            if (index < contentType.length() && contentType.charAt(index) == '"') {
+                index = readQuotedParameter(contentType, index + 1, value);
+            } else {
+                int valueStart = index;
+                while (index < contentType.length() && contentType.charAt(index) != ';') {
+                    index++;
+                }
+                String tokenValue = contentType.substring(valueStart, index).trim();
+                if (!isMimeToken(tokenValue.toLowerCase(Locale.US))) {
+                    throw new IOException("Air quality response media type is invalid");
+                }
+                value.append(tokenValue);
+            }
+
+            if ("charset".equals(name)) {
+                String normalizedValue = value.substring(0).toLowerCase(Locale.US);
+                if (charsetSeen
+                        || !"utf-8".equals(normalizedValue)) {
+                    throw new IOException("Air quality response media type is invalid");
+                }
+                charsetSeen = true;
+            }
+
+            index = skipHttpWhitespace(contentType, index);
+            if (index == contentType.length()) {
+                return;
+            }
+            if (contentType.charAt(index) != ';') {
+                throw new IOException("Air quality response media type is invalid");
+            }
+            index++;
+        }
+
+        throw new IOException("Air quality response media type is invalid");
+    }
+
+    private static int readQuotedParameter(
+            String contentType, int index, StringBuilder value) throws IOException {
+        while (index < contentType.length()) {
+            char character = contentType.charAt(index++);
+            if (character == '"') {
+                return index;
+            }
+            if (character == '\\') {
+                if (index >= contentType.length()) {
+                    throw new IOException("Air quality response media type is invalid");
+                }
+                character = contentType.charAt(index++);
+            }
+            if ((character < 0x20 && character != '\t') || character == 0x7f) {
+                throw new IOException("Air quality response media type is invalid");
+            }
+            value.append(character);
+        }
+        throw new IOException("Air quality response media type is invalid");
+    }
+
+    private static int skipHttpWhitespace(String value, int index) {
+        while (index < value.length()
+                && (value.charAt(index) == ' ' || value.charAt(index) == '\t')) {
+            index++;
+        }
+        return index;
     }
 
     static long parseContentLength(String contentLength) throws IOException {

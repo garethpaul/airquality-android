@@ -193,6 +193,9 @@ def main():
     content_length_plan = read_text(
         "docs/plans/2026-06-14-strict-content-length-validation.md"
     )
+    charset_plan = read_text(
+        "docs/plans/2026-06-15-json-response-charset-validation.md"
+    )
     device_verification = read_text("DEVICE_VERIFICATION.md")
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
@@ -495,6 +498,16 @@ def main():
         failures,
     )
     require(
+        "requireUtf8MediaTypeParameters(contentType, parameterStart)" in network
+        and "boolean charsetSeen = false;" in network
+        and '"charset".equals(name)' in network
+        and '"utf-8".equals(normalizedValue)' in network
+        and "readQuotedParameter" in network
+        and "skipHttpWhitespace" in network,
+        "NetworkRequest must require unambiguous UTF-8 charset metadata",
+        failures,
+    )
+    require(
         contains_in_order(
             network,
             "HttpEntity entity = response.getEntity();",
@@ -527,6 +540,22 @@ def main():
         in network_tests
         and 'assertInvalidMediaType("text/html")' in network_tests,
         "NetworkRequest JSON media type behavior must retain focused unit coverage",
+        failures,
+    )
+    require(
+        'NetworkRequest.requireJsonMediaType("application/json; charset=\\"utf-8\\"")'
+        in network_tests
+        and 'profile=\\"https://example.test/schema;a=b\\"' in network_tests
+        and 'charset = \\"UTF-8\\"' in network_tests
+        and 'assertInvalidMediaType("application/json; charset=ISO-8859-1")'
+        in network_tests
+        and 'assertInvalidMediaType("application/json; charset=UTF-8; charset=UTF-8")'
+        in network_tests
+        and 'assertInvalidMediaType("application/json; charset=UTF-8; charset=ISO-8859-1")'
+        in network_tests
+        and 'assertInvalidMediaType("application/json; profile=\\"unterminated")'
+        in network_tests,
+        "NetworkRequestTest must cover UTF-8 charset and malformed parameter handling",
         failures,
     )
     require(
@@ -644,6 +673,14 @@ def main():
         and "Generic location acquisition failure logs" in security
         and "location log boundary" in changes,
         "Repository guidance must document the generic location log boundary",
+        failures,
+    )
+    require(
+        all(
+            "Response charset metadata must be absent or unambiguous UTF-8" in text
+            for text in (readme, security, vision, changes)
+        ),
+        "Repository guidance must document response charset consistency",
         failures,
     )
     require(
@@ -881,6 +918,15 @@ def main():
         and "make check" in content_length_plan
         and "mutations" in content_length_plan.lower(),
         "strict Content-Length plan must record completed verification",
+        failures,
+    )
+    require(
+        "status: completed" in charset_plan
+        and "make check" in charset_plan
+        and "external working directory" in charset_plan
+        and "hostile mutations" in charset_plan
+        and "secret and generated-artifact scan" in charset_plan,
+        "JSON response charset plan must record completed verification",
         failures,
     )
     require(
