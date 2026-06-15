@@ -97,6 +97,7 @@ device proof.
   categories without recording throwable stack traces, coordinate-bearing
   request URLs, or provider exception details.
 - `MainActivity` treats missing or malformed `air_quality` JSON as an explicit unknown state before accelerometer rendering.
+- MainActivity accepts air_quality only when its JSON value is a nonblank string.
 - `MainActivity` owns its active air-quality request, ignores stale callbacks,
   and cancels the task when the activity is destroyed.
 - Failed air-quality requests retain one resume-time retry from the accepted

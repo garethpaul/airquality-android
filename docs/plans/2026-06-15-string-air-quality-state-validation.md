@@ -1,6 +1,6 @@
 # String Air Quality State Validation
 
-status: in progress
+status: completed
 
 ## Context
 
@@ -81,8 +81,29 @@ and structured fixtures, documentation, and completed-plan status are rejected.
 
 ## Work Completed
 
-Pending implementation.
+- Replaced `optString` coercion with a raw-value `String` type guard while
+  preserving the existing null and blank fallback.
+- Added `MainActivityTest` coverage for valid strings plus missing, null, blank,
+  boolean, numeric, object, array, and null-response cases.
+- Added SDK-free source, fixture, guidance, and completed-plan contracts.
+- Updated maintained README, security, vision, and change guidance.
 
 ## Verification Completed
 
-Pending implementation and validation.
+- `readAirQualityStateDefaultsMissingNullBlankAndNonStringValues` is registered
+  in both Android JUnit coverage and the SDK-free static checker.
+- `python3 -m py_compile scripts/check_airquality_android_contracts.py` passed.
+- `make lint`, `make test`, `make build`, and `make check` passed from the
+  repository; the complete check also passed through the absolute Makefile
+  path from an external directory.
+- Local Gradle and Android JUnit execution truthfully skipped because this
+  Linux worktree has no Android SDK configuration; hosted Android verification
+  remains required.
+- Six isolated hostile mutations covering the raw-value read, string type
+  guard, scalar and structured fixtures, maintained guidance, and plan status
+  were rejected for their intended contracts.
+- The simplification pass retained the direct raw-object guard and compact test
+  helper as the clearest implementation.
+- Plan-aware review found no actionable findings, and the exact eight-file
+  diff, whitespace, generated-artifact, conflict-marker, build/workflow drift,
+  and credential-shaped addition audits passed.

@@ -198,7 +198,12 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
             return DEFAULT_AIR_QUALITY_STATE;
         }
 
-        String airQuality = response.optString("air_quality", DEFAULT_AIR_QUALITY_STATE);
+        Object rawAirQuality = response.opt("air_quality");
+        if (!(rawAirQuality instanceof String)) {
+            return DEFAULT_AIR_QUALITY_STATE;
+        }
+
+        String airQuality = (String) rawAirQuality;
         if (airQuality.trim().length() == 0) {
             return DEFAULT_AIR_QUALITY_STATE;
         }

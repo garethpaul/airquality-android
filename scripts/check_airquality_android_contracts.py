@@ -140,6 +140,9 @@ def main():
     main_activity = read_text("app/src/main/java/twitterdev/airquality/MainActivity.java")
     login_activity = read_text("app/src/main/java/twitterdev/airquality/LoginActivity.java")
     network_tests = read_text("app/src/test/java/twitterdev/airquality/NetworkRequestTest.java")
+    main_activity_tests = read_text(
+        "app/src/test/java/twitterdev/airquality/MainActivityTest.java"
+    )
     app_build = read_text("app/build.gradle")
     application = read_text("app/src/main/java/twitterdev/airquality/AirQualityApplication.java")
     manifest = read_text("app/src/main/AndroidManifest.xml")
@@ -198,6 +201,9 @@ def main():
     )
     quoted_comma_plan = read_text(
         "docs/plans/2026-06-15-quoted-content-type-commas.md"
+    )
+    state_validation_plan = read_text(
+        "docs/plans/2026-06-15-string-air-quality-state-validation.md"
     )
     device_verification = read_text("DEVICE_VERIFICATION.md")
     ci_workflow = read_text(".github/workflows/check.yml")
@@ -599,11 +605,48 @@ def main():
     require(
         'DEFAULT_AIR_QUALITY_STATE = "Unknown"' in main_activity
         and "readAirQualityState(JSONObject response)" in main_activity
-        and 'response.optString("air_quality", DEFAULT_AIR_QUALITY_STATE)'
-        in main_activity,
+        and 'Object rawAirQuality = response.opt("air_quality");' in main_activity
+        and "if (!(rawAirQuality instanceof String))" in main_activity
+        and "String airQuality = (String) rawAirQuality;" in main_activity,
         "MainActivity must default malformed or missing air-quality JSON safely",
         failures,
     )
+    for contract in (
+        "readAirQualityStateDefaultsMissingNullBlankAndNonStringValues",
+        "responseWith(JSONObject.NULL)",
+        "responseWith(true)",
+        "responseWith(42)",
+        'new JSONObject().put("nested", "value")',
+        'new JSONArray().put("Good")',
+    ):
+        require(
+            contract in main_activity_tests,
+            f"MainActivity string-state tests must keep contract: {contract}",
+            failures,
+        )
+    for name, text in {
+        "README.md": readme,
+        "SECURITY.md": security,
+        "VISION.md": vision,
+        "CHANGES.md": changes,
+    }.items():
+        require(
+            "MainActivity accepts air_quality only when its JSON value is a nonblank string."
+            in text,
+            f"{name} must document strict air-quality state typing",
+            failures,
+        )
+    for contract in (
+        "status: completed",
+        "readAirQualityStateDefaultsMissingNullBlankAndNonStringValues",
+        "make check",
+        "hostile mutations",
+    ):
+        require(
+            contract in state_validation_plan,
+            f"String state validation plan must keep contract: {contract}",
+            failures,
+        )
     require(
         "GOOD_AIR_QUALITY_STATE.equals(state)" in main_activity
         and "state.equals(" not in main_activity,

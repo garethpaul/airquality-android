@@ -60,6 +60,7 @@ Helpful reports include:
   duplicate, empty, and non-UTF-8 declarations fail before body access.
 - Quoted Content-Type parameter values may contain commas; unquoted or combined
   comma values remain invalid.
+- MainActivity accepts air_quality only when its JSON value is a nonblank string.
 - Generic NetworkRequest failure logs retain only stable protocol, JSON, and
   parameter categories. They do not pass dependency throwables to logcat,
   where stack traces or messages could expose coordinates, request URLs, or

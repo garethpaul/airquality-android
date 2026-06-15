@@ -48,6 +48,7 @@ Priority:
 - Keep location service availability checked before provider state reads
 - Keep malformed or missing air-quality responses from crashing sensor-driven
   rendering
+- MainActivity accepts air_quality only when its JSON value is a nonblank string.
 - Keep accelerometer registration guarded for devices or layouts without an
   available sensor service
 - Keep sensor events and display views guarded before accelerometer rendering
