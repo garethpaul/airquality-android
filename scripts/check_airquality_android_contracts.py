@@ -206,6 +206,9 @@ def main():
     state_validation_plan = read_text(
         "docs/plans/2026-06-15-string-air-quality-state-validation.md"
     )
+    state_whitespace_plan = read_text(
+        "docs/plans/2026-06-15-canonical-air-quality-state-whitespace.md"
+    )
     device_verification = read_text("DEVICE_VERIFICATION.md")
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
@@ -608,7 +611,7 @@ def main():
         and "readAirQualityState(JSONObject response)" in main_activity
         and 'Object rawAirQuality = response.opt("air_quality");' in main_activity
         and "if (!(rawAirQuality instanceof String))" in main_activity
-        and "String airQuality = (String) rawAirQuality;" in main_activity,
+        and "String airQuality = ((String) rawAirQuality).trim();" in main_activity,
         "MainActivity must default malformed or missing air-quality JSON safely",
         failures,
     )
@@ -623,6 +626,16 @@ def main():
         require(
             contract in main_activity_tests,
             f"MainActivity string-state tests must keep contract: {contract}",
+            failures,
+        )
+    for contract in (
+        "readAirQualityStateTrimsNonblankStrings",
+        'responseWith("  Good \\t")',
+        'responseWith("\\nModerate ")',
+    ):
+        require(
+            contract in main_activity_tests,
+            f"MainActivity state-whitespace tests must keep contract: {contract}",
             failures,
         )
     require(
@@ -680,6 +693,30 @@ def main():
         require(
             contract in state_validation_plan,
             f"String state validation plan must keep contract: {contract}",
+            failures,
+        )
+    for name, text in {
+        "README.md": readme,
+        "SECURITY.md": security,
+        "VISION.md": vision,
+        "CHANGES.md": changes,
+    }.items():
+        require(
+            "MainActivity trims surrounding whitespace from nonblank air_quality strings."
+            in text,
+            f"{name} must document canonical air-quality state whitespace",
+            failures,
+        )
+    for contract in (
+        "status: completed",
+        "readAirQualityStateTrimsNonblankStrings",
+        "make check",
+        "Six isolated hostile mutations",
+        "credential-shaped addition audits",
+    ):
+        require(
+            contract in state_whitespace_plan,
+            f"State whitespace plan must keep contract: {contract}",
             failures,
         )
     require(

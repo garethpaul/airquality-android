@@ -1,6 +1,6 @@
 # Canonical Air Quality State Whitespace
 
-status: in_progress
+status: completed
 
 ## Context
 
@@ -65,8 +65,25 @@ guidance, and completed-plan evidence are rejected.
 
 ## Work Completed
 
-Pending implementation.
+- Trimmed accepted string `air_quality` values once before blank detection and
+  return.
+- Added `readAirQualityStateTrimsNonblankStrings` with padded `Good` and
+  `Moderate` values using the pinned real JSON implementation.
+- Registered normalization, fixtures, maintained guidance, and completed-plan
+  evidence in the SDK-free checker.
 
 ## Verification Completed
 
-Pending implementation and verification.
+- Focused debug and release `MainActivityTest` JVM suites passed with Java 8,
+  Android API 22, and `org.json:json:20260522`.
+- The SDK-free Python checker and syntax compilation passed.
+- `make check`, `make lint`, `make test`, and `make build` passed with the
+  configured Android SDK; the complete check also passed through the absolute
+  Makefile path from an external directory.
+- Six isolated hostile mutations covering normalization, both padded fixtures,
+  focused-test identity, guidance, and plan evidence were rejected.
+- No emulator, device, backend, location-provider, or sensor behavior was
+  exercised.
+- Exact diff, generated-artifact, project/dependency, conflict-marker,
+  credential-shaped addition audits, and whitespace checks are completed before
+  commit.

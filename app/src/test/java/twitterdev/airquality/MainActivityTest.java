@@ -14,6 +14,12 @@ public class MainActivityTest {
     }
 
     @Test
+    public void readAirQualityStateTrimsNonblankStrings() throws Exception {
+        assertEquals("Good", MainActivity.readAirQualityState(responseWith("  Good \t")));
+        assertEquals("Moderate", MainActivity.readAirQualityState(responseWith("\nModerate ")));
+    }
+
+    @Test
     public void readAirQualityStateDefaultsMissingNullBlankAndNonStringValues()
             throws Exception {
         assertUnknown(null);

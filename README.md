@@ -98,6 +98,7 @@ device proof.
   request URLs, or provider exception details.
 - `MainActivity` treats missing or malformed `air_quality` JSON as an explicit unknown state before accelerometer rendering.
 - MainActivity accepts air_quality only when its JSON value is a nonblank string.
+- MainActivity trims surrounding whitespace from nonblank air_quality strings.
 - Android JVM tests use pinned `org.json:json:20260522` semantics instead of
   Android SDK not-mocked stubs; production continues using platform JSON.
 - `MainActivity` owns its active air-quality request, ignores stale callbacks,
