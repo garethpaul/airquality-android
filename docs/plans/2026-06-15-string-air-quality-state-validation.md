@@ -34,8 +34,11 @@ This plan implements only P0.
 ## Scope Boundaries
 
 - Do not change network transport, JSON body parsing, request retries,
-  lifecycle cancellation, location handling, sensor rendering, dependencies,
-  Gradle, target SDK, or public backend contracts.
+  lifecycle cancellation, location handling, sensor rendering, production
+  dependencies, target SDK, or public backend contracts.
+- A pinned test-only JSON implementation and its Maven Central resolver are in
+  scope only to make the existing Android JVM tests execute real `JSONObject`
+  behavior instead of Android SDK stub methods.
 - Do not claim emulator or physical-device behavior without execution evidence.
 
 ## Implementation Units
@@ -107,3 +110,31 @@ and structured fixtures, documentation, and completed-plan status are rejected.
 - Plan-aware review found no actionable findings, and the exact eight-file
   diff, whitespace, generated-artifact, conflict-marker, build/workflow drift,
   and credential-shaped addition audits passed.
+
+## Hosted Android Follow-Up
+
+The first exact-head Android job ran the new tests and failed because local JVM
+tests loaded the Android SDK's stub `org.json` classes. `JSONObject.put` and
+`JSONObject.opt` throw the standard not-mocked runtime exception outside a
+device, so the test process could not exercise the production type guard.
+
+### Requirements
+
+1. Add Maven Central as an application/test dependency resolver without
+   removing the legacy repositories needed by the pinned Android toolchain.
+2. Pin `org.json:json:20260522` as a test-only dependency. Maven Central marks
+   it as the current release and its classes target Java 8 bytecode.
+3. Keep the existing valid, missing, null, blank, boolean, numeric, object, and
+   array assertions unchanged and executable in both debug and release JVM
+   suites.
+4. Add SDK-free contracts for the resolver, exact test dependency, and hosted
+   correction evidence.
+5. Run the complete Android gate locally with Java 8 and API 22, then require a
+   new exact-head hosted result without weakening coverage.
+
+### Verification Boundary
+
+- The test-only library supplies executable JSON semantics; production Android
+  continues using the platform `org.json` implementation.
+- No emulator, physical device, live backend, location provider, or sensor is
+  claimed by JVM test success.
