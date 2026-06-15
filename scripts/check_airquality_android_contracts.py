@@ -206,6 +206,9 @@ def main():
     duplicate_content_type_plan = read_text(
         "docs/plans/2026-06-15-duplicate-content-type-headers.md"
     )
+    content_type_control_plan = read_text(
+        "docs/plans/2026-06-15-content-type-control-character-rejection.md"
+    )
     state_validation_plan = read_text(
         "docs/plans/2026-06-15-string-air-quality-state-validation.md"
     )
@@ -531,6 +534,17 @@ def main():
         failures,
     )
     require(
+        "private static String trimHttpWhitespace(String value)" in network
+        and "mediaType = trimHttpWhitespace(mediaType)" in network
+        and "String name = trimHttpWhitespace(contentType.substring(nameStart, index))"
+        in network
+        and "String tokenValue = trimHttpWhitespace(" in network
+        and "value.charAt(end - 1) == ' '" in network
+        and "value.charAt(end - 1) == '\\t'" in network,
+        "NetworkRequest must trim only HTTP space and tab outside quoted values",
+        failures,
+    )
+    require(
         contains_in_order(
             network,
             "HttpEntity entity = response.getEntity();",
@@ -574,6 +588,19 @@ def main():
         in network_tests
         and 'assertInvalidMediaType("text/html")' in network_tests,
         "NetworkRequest JSON media type behavior must retain focused unit coverage",
+        failures,
+    )
+    require(
+        "requireJsonMediaTypeRejectsControlsOutsideQuotedValues" in network_tests
+        and 'assertInvalidMediaType("\\rapplication/json")' in network_tests
+        and 'assertInvalidMediaType("application/json\\n")' in network_tests
+        and 'assertInvalidMediaType("application/json;\\u000bcharset=UTF-8")'
+        in network_tests
+        and 'assertInvalidMediaType("application/json; charset=\\rUTF-8")'
+        in network_tests
+        and '" \\tapplication/json\\t ;\\tcharset\\t=\\tUTF-8\\t"'
+        in network_tests,
+        "NetworkRequest media type tests must reject controls and preserve HTTP OWS",
         failures,
     )
     require(
@@ -1117,6 +1144,34 @@ def main():
         require(
             duplicate_content_type_guidance in document,
             f"{document_name} must document duplicate Content-Type rejection",
+            failures,
+        )
+
+    content_type_control_guidance = (
+        "Response Content-Type parsing accepts only space and tab as optional HTTP "
+        "whitespace; CR, LF, and other controls fail before body access."
+    )
+    for document_name, document in (
+        ("README.md", readme),
+        ("SECURITY.md", security),
+        ("VISION.md", vision),
+        ("CHANGES.md", changes),
+    ):
+        require(
+            content_type_control_guidance in document,
+            f"{document_name} must document Content-Type control rejection",
+            failures,
+        )
+
+    for contract in (
+        "Status: Completed",
+        "requireJsonMediaTypeRejectsControlsOutsideQuotedValues",
+        "repository and external-directory `make check` passed",
+        "hostile mutations were rejected",
+    ):
+        require(
+            contract in content_type_control_plan,
+            f"Content-Type control-character plan must keep contract: {contract}",
             failures,
         )
     require(

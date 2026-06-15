@@ -88,6 +88,8 @@ public class NetworkRequestTest {
                         + "charset = \"UTF-8\"");
         NetworkRequest.requireJsonMediaType(
                 "application/json; profile=\"https://example.test/schema,a=b\"");
+        NetworkRequest.requireJsonMediaType(
+                " \tapplication/json\t ;\tcharset\t=\tUTF-8\t");
         NetworkRequest.requireJsonMediaType("application/problem+json");
         NetworkRequest.requireJsonMediaType(" application/vnd.airquality.v1+json ");
     }
@@ -110,6 +112,22 @@ public class NetworkRequestTest {
         assertInvalidMediaType("application/json; profile=\"unterminated");
         assertInvalidMediaType("text/json");
         assertInvalidMediaType("text/html");
+    }
+
+    @Test
+    public void requireJsonMediaTypeRejectsControlsOutsideQuotedValues() {
+        assertInvalidMediaType("\rapplication/json");
+        assertInvalidMediaType("\napplication/json");
+        assertInvalidMediaType("\u000bapplication/json");
+        assertInvalidMediaType("\u000capplication/json");
+        assertInvalidMediaType("application/json\r");
+        assertInvalidMediaType("application/json\n");
+        assertInvalidMediaType("application/json;\rcharset=UTF-8");
+        assertInvalidMediaType("application/json;\ncharset=UTF-8");
+        assertInvalidMediaType("application/json;\u000bcharset=UTF-8");
+        assertInvalidMediaType("application/json;\u000ccharset=UTF-8");
+        assertInvalidMediaType("application/json; charset=\rUTF-8");
+        assertInvalidMediaType("application/json; charset=UTF-8\n");
     }
 
     @Test

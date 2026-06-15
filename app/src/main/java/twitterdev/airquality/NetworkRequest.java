@@ -103,7 +103,8 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
         int parameterStart = contentType.indexOf(';');
         String mediaType = (parameterStart >= 0
                 ? contentType.substring(0, parameterStart)
-                : contentType).trim().toLowerCase(Locale.US);
+                : contentType);
+        mediaType = trimHttpWhitespace(mediaType).toLowerCase(Locale.US);
         int separator = mediaType.indexOf('/');
         if (separator <= 0 || separator != mediaType.lastIndexOf('/')) {
             throw new IOException("Air quality response media type is invalid");
@@ -150,8 +151,8 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
                 throw new IOException("Air quality response media type is invalid");
             }
 
-            String name = contentType.substring(nameStart, index)
-                    .trim().toLowerCase(Locale.US);
+            String name = trimHttpWhitespace(contentType.substring(nameStart, index))
+                    .toLowerCase(Locale.US);
             if (!isMimeToken(name)) {
                 throw new IOException("Air quality response media type is invalid");
             }
@@ -165,7 +166,8 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
                 while (index < contentType.length() && contentType.charAt(index) != ';') {
                     index++;
                 }
-                String tokenValue = contentType.substring(valueStart, index).trim();
+                String tokenValue = trimHttpWhitespace(
+                        contentType.substring(valueStart, index));
                 if (!isMimeToken(tokenValue.toLowerCase(Locale.US))) {
                     throw new IOException("Air quality response media type is invalid");
                 }
@@ -221,6 +223,16 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
             index++;
         }
         return index;
+    }
+
+    private static String trimHttpWhitespace(String value) {
+        int start = skipHttpWhitespace(value, 0);
+        int end = value.length();
+        while (end > start
+                && (value.charAt(end - 1) == ' ' || value.charAt(end - 1) == '\t')) {
+            end--;
+        }
+        return value.substring(start, end);
     }
 
     static long parseContentLength(String contentLength) throws IOException {

@@ -9,6 +9,7 @@
 1. Quoted Content-Type parameter values may contain commas while unquoted or
    combined comma values remain invalid.
 1. Backend responses must contain exactly one Content-Type header before body access.
+1. Response Content-Type parsing accepts only space and tab as optional HTTP whitespace; CR, LF, and other controls fail before body access.
 1. Response charset metadata must be absent or unambiguous UTF-8 before the
    backend body is read and strictly decoded.
 

@@ -57,6 +57,7 @@ Helpful reports include:
   or body access; missing, ambiguous, malformed, and non-JSON values fail
   closed without content sniffing.
 - Backend responses must contain exactly one Content-Type header before body access.
+- Response Content-Type parsing accepts only space and tab as optional HTTP whitespace; CR, LF, and other controls fail before body access.
 - Response charset metadata must be absent or unambiguous UTF-8; malformed,
   duplicate, empty, and non-UTF-8 declarations fail before body access.
 - Quoted Content-Type parameter values may contain commas; unquoted or combined

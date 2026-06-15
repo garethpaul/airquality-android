@@ -87,6 +87,7 @@ device proof.
   `application/json` and structured `application/*+json` values while rejecting
   missing, ambiguous, malformed, or non-JSON types before body access.
 - Backend responses must contain exactly one Content-Type header before body access.
+- Response Content-Type parsing accepts only space and tab as optional HTTP whitespace; CR, LF, and other controls fail before body access.
 - Response charset metadata must be absent or unambiguous UTF-8 so declared
   metadata agrees with the strict decoder used before JSON parsing.
 - Quoted Content-Type parameter values may contain commas; unquoted or combined

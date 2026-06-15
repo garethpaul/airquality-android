@@ -1,6 +1,6 @@
 # Content-Type Control Character Rejection
 
-Status: Planned
+Status: Completed
 
 ## Problem
 
@@ -55,8 +55,8 @@ space/tab formatting and quoted parameters.
 
 ### U3: Preserve Durable Contracts
 
-**Files:** `scripts/check_airquality_android_contracts.py`, `AGENTS.md`,
-`README.md`, `SECURITY.md`, `VISION.md`, `CHANGES.md`, and this plan.
+**Files:** `scripts/check_airquality_android_contracts.py`, `README.md`,
+`SECURITY.md`, `VISION.md`, `CHANGES.md`, and this plan.
 
 Require the narrow whitespace helper, parser integration, focused tests,
 maintained guidance, completed plan status, and verification evidence.
@@ -90,3 +90,16 @@ maintained guidance, completed plan status, and verification evidence.
   control-character cases, weaken guidance, or falsify plan completion.
 - Audit generated Gradle/build artifacts, exact diff, credentials, dependency
   and workflow drift, conflict markers, and whitespace before commit.
+
+## Completed Verification
+
+- `requireJsonMediaTypeRejectsControlsOutsideQuotedValues` passed in both the
+  debug and release variants; each variant ran 15 `NetworkRequestTest` cases
+  and 3 `MainActivityTest` cases with zero failures.
+- repository and external-directory `make check` passed with Android lint,
+  both unit-test variants, and debug assembly enabled.
+- Six isolated hostile mutations were rejected: restoring broad `trim()` at
+  each of the three parser boundaries, removing the focused test contract,
+  removing maintained guidance, and reverting this plan to planned status.
+- The final diff, generated artifacts, credentials, dependency and workflow
+  drift, conflict markers, and whitespace were audited before commit.
