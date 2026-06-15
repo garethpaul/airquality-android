@@ -40,8 +40,9 @@ creates a contradiction between trusted metadata and actual decoding.
    that validates syntax and enforces at most one UTF-8 charset.
 2. Add direct tests in `NetworkRequestTest` for accepted UTF-8 forms and
    rejected conflicting, malformed, empty, and non-UTF-8 forms.
-3. Extend `scripts/check-baseline.rb` and maintained documentation with the
-   charset-to-decoder consistency contract and completed evidence.
+3. Extend `scripts/check_airquality_android_contracts.py` and maintained
+   documentation with the charset-to-decoder consistency contract and
+   completed evidence.
 
 ## Verification Plan
 
