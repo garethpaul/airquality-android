@@ -143,6 +143,7 @@ def main():
     main_activity_tests = read_text(
         "app/src/test/java/twitterdev/airquality/MainActivityTest.java"
     )
+    root_build = read_text("build.gradle")
     app_build = read_text("app/build.gradle")
     application = read_text("app/src/main/java/twitterdev/airquality/AirQualityApplication.java")
     manifest = read_text("app/src/main/AndroidManifest.xml")
@@ -622,6 +623,40 @@ def main():
         require(
             contract in main_activity_tests,
             f"MainActivity string-state tests must keep contract: {contract}",
+            failures,
+        )
+    require(
+        "repositories {\n        mavenCentral()\n        jcenter()\n    }" in root_build
+        and "testCompile 'org.json:json:20260522'" in app_build,
+        "Android JVM tests must use the pinned Java 8 JSON implementation from Maven Central",
+        failures,
+    )
+    require(
+        "org.json:json:" not in "\n".join(
+            line for line in app_build.splitlines() if "testCompile" not in line
+        ),
+        "The real JSON implementation must remain test-only",
+        failures,
+    )
+    require(
+        "Android JVM tests use pinned `org.json:json:20260522` semantics" in readme
+        and "test-only JSON implementation" in changes,
+        "Maintained guidance must document the real test-only JSON implementation",
+        failures,
+    )
+    for contract in (
+        "Hosted Android Follow-Up",
+        "org.json:json:20260522",
+        "Java 8",
+        "test-only dependency",
+        "new exact-head hosted result",
+        "Hosted Correction Completed",
+        "fresh Gradle user home",
+        "Eight hostile mutations",
+    ):
+        require(
+            contract in state_validation_plan,
+            f"String state hosted correction plan must keep contract: {contract}",
             failures,
         )
     for name, text in {

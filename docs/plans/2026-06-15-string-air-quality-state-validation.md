@@ -99,9 +99,10 @@ and structured fixtures, documentation, and completed-plan status are rejected.
 - `make lint`, `make test`, `make build`, and `make check` passed from the
   repository; the complete check also passed through the absolute Makefile
   path from an external directory.
-- Local Gradle and Android JUnit execution truthfully skipped because this
-  Linux worktree has no Android SDK configuration; hosted Android verification
-  remains required.
+- The initial implementation pass skipped local Gradle and Android JUnit
+  execution because that worktree had no SDK configuration; the hosted
+  follow-up below later reproduced and corrected the resulting test failure
+  with an installed API 22 SDK.
 - Six isolated hostile mutations covering the raw-value read, string type
   guard, scalar and structured fixtures, maintained guidance, and plan status
   were rejected for their intended contracts.
@@ -138,3 +139,22 @@ device, so the test process could not exercise the production type guard.
   continues using the platform `org.json` implementation.
 - No emulator, physical device, live backend, location provider, or sensor is
   claimed by JVM test success.
+
+### Hosted Correction Completed
+
+- Exact hosted run `27531145003` reproduced two `MainActivityTest` failures in
+  `testDebug` because Android's local `JSONObject` methods were not mocked.
+- A fresh Gradle user home resolved `org.json:json:20260522` from Maven Central;
+  the artifact targets Java 8 class-file version 52.
+- Debug and release JVM suites passed with the real JSON implementation while
+  the dependency remained test-only and production Android retained platform
+  JSON.
+- Repository and external-directory `make check` passed the SDK-free checker,
+  the documented one-warning-per-variant lint baseline, both JVM variants, and
+  debug APK assembly with Java 8, API 22, and build-tools 24.0.3.
+- Eight hostile mutations were rejected for resolver presence and order,
+  version drift, production-scope leakage, maintained guidance, and completed
+  plan evidence.
+- Hosted exact-head verification remains pending after the correction is
+  committed and pushed; emulator, device, backend, location, and sensor
+  behavior remain unclaimed.

@@ -2,6 +2,8 @@
 
 ## 2026-06-15
 
+1. Pinned a Java 8-compatible test-only JSON implementation so Android JVM
+   state-validation tests execute real `JSONObject` behavior.
 1. MainActivity accepts air_quality only when its JSON value is a nonblank string.
 1. Quoted Content-Type parameter values may contain commas while unquoted or
    combined comma values remain invalid.
