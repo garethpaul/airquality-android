@@ -78,7 +78,7 @@ device proof.
   credential placeholders are blank.
 - `NetworkRequest.buildUrl` trims and validates latitude and longitude, then
   sends canonical decimal coordinate values through URL encoding so Java-only
-  numeric syntax cannot cross the backend boundary.
+  numeric syntax cannot cross the backend boundary; signed-zero coordinates normalize to `0.0`.
 - `NetworkRequest.buildUrlFromParams` validates the `AsyncTask` parameter array before the background request path creates an HTTP request.
 - `NetworkRequest` applies bounded connection and socket timeouts to the HTTP client used for the backend request.
 - `NetworkRequest` rejects automatic redirects so the fixed HTTPS backend is

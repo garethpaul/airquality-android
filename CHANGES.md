@@ -2,6 +2,7 @@
 
 ## 2026-06-16
 
+1. Signed-zero coordinates now normalize to `0.0` before backend URL encoding.
 1. LoginActivity is the only exported launcher; MainActivity is explicitly non-exported and reached with an explicit in-app intent.
 1. Backend response reads fail when a stream reports zero progress instead of spinning indefinitely.
 

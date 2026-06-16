@@ -317,6 +317,9 @@ def main():
     zero_progress_read_plan = read_text(
         "docs/plans/2026-06-16-zero-progress-response-read.md"
     )
+    signed_zero_coordinate_plan = read_text(
+        "docs/plans/2026-06-16-signed-zero-coordinate-serialization.md"
+    )
     device_verification = read_text("DEVICE_VERIFICATION.md")
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
@@ -371,6 +374,11 @@ def main():
         failures,
     )
     require(
+        "coordinate == 0.0d" in network and 'return "0.0";' in network,
+        "NetworkRequest must canonicalize signed-zero coordinates",
+        failures,
+    )
+    require(
         "buildUrlTrimsLatitudeAndLongitude" in network_tests
         and "buildUrlCanonicalizesJavaOnlyCoordinateSyntax" in network_tests
         and 'NetworkRequest.buildUrl("37.7d", "0x1.2p5")' in network_tests
@@ -378,6 +386,13 @@ def main():
         and "buildUrlRejectsNonNumericAndOutOfRangeCoordinates" in network_tests
         and "Infinity" in network_tests,
         "NetworkRequestTest must cover trimming and invalid coordinate inputs",
+        failures,
+    )
+    require(
+        "buildUrlCanonicalizesSignedZeroCoordinates" in network_tests
+        and 'NetworkRequest.buildUrl("-0", "-0.0")' in network_tests
+        and 'NetworkRequest.buildUrl("-0e10d", "-0x0.0p0")' in network_tests,
+        "NetworkRequestTest must cover signed-zero coordinate spellings",
         failures,
     )
     require(
@@ -1390,6 +1405,25 @@ def main():
         "canonical coordinate serialization must remain documented",
         failures,
     )
+    require(
+        "signed-zero coordinates normalize to `0.0`" in readme
+        and "signed-zero coordinates normalize to `0.0`" in security
+        and "signed-zero coordinates normalize to `0.0`" in vision
+        and "Signed-zero coordinates now normalize to `0.0`" in changes,
+        "signed-zero coordinate canonicalization must remain documented",
+        failures,
+    )
+    for contract in (
+        "Status: Completed",
+        "repository-root and external-directory `make check`",
+        "hostile mutations",
+        "emulator, physical device, location provider, or live backend request",
+    ):
+        require(
+            contract in signed_zero_coordinate_plan,
+            f"signed-zero coordinate plan must keep contract: {contract}",
+            failures,
+        )
     require(
         "Failed air-quality requests retain one resume-time retry" in readme
         and "pause must not discard it" in security

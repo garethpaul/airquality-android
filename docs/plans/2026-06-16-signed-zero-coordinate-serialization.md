@@ -1,6 +1,6 @@
 # Canonicalize Signed-Zero Coordinates
 
-Status: Planned
+Status: Completed
 
 ## Problem
 
@@ -58,3 +58,17 @@ legacy Android, Gradle, HTTP, or lifecycle boundaries.
 
 - Java 8/API 22 JVM and build verification cannot substitute for an authorized
   emulator, physical device, location provider, or live backend request.
+
+## Completed Verification
+
+- The focused JVM regression failed before implementation because both decimal
+  signed-zero inputs produced `-0.0` in the backend URL.
+- Debug and release JVM tests passed after canonicalization, including decimal,
+  exponent, suffix, and hexadecimal signed-zero spellings on both axes.
+- Android lint retained one pre-existing non-fatal issue, all unit tests passed,
+  and debug APK assembly completed under Java 8 and Android API 22.
+- Repository-root and external-directory `make check` both passed the complete
+  SDK-free and SDK-backed gate.
+- All seven isolated hostile mutations were rejected: removed canonicalization,
+  restored negative-zero output, renamed coverage, removed decimal or
+  hexadecimal spellings, removed guidance, and reopened plan status.

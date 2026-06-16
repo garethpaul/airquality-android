@@ -55,7 +55,7 @@ LoginActivity is the only exported launcher; MainActivity is explicitly non-expo
 - Backend requests reject automatic redirects so intermediaries cannot move the
   fixed HTTPS request to another transport target.
 - Validated location values are serialized as canonical decimal coordinates so
-  Java-only numeric syntax is not forwarded to the backend parser.
+  Java-only numeric syntax is not forwarded to the backend parser; signed-zero coordinates normalize to `0.0`.
 - Backend responses require JSON application media types before length checks
   or body access; missing, ambiguous, malformed, and non-JSON values fail
   closed without content sniffing.

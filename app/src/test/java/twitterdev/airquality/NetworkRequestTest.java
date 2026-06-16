@@ -33,6 +33,16 @@ public class NetworkRequestTest {
     }
 
     @Test
+    public void buildUrlCanonicalizesSignedZeroCoordinates() {
+        assertEquals(
+                "https://garethpaul-app.appspot.com/api/airquality?lat=0.0&lng=0.0",
+                NetworkRequest.buildUrl("-0", "-0.0"));
+        assertEquals(
+                "https://garethpaul-app.appspot.com/api/airquality?lat=0.0&lng=0.0",
+                NetworkRequest.buildUrl("-0e10d", "-0x0.0p0"));
+    }
+
+    @Test
     public void buildUrlFromParamsUsesFirstLatitudeAndLongitude() {
         assertEquals(
                 "https://garethpaul-app.appspot.com/api/airquality?lat=37.7&lng=-122.4",

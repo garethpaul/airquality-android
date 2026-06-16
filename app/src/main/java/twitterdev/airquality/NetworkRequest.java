@@ -76,6 +76,9 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
             throw new IllegalArgumentException(name + " is outside the supported range");
         }
 
+        if (coordinate == 0.0d) {
+            return "0.0";
+        }
         return Double.toString(coordinate);
     }
 
