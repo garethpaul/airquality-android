@@ -255,6 +255,24 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
         return parsedLength;
     }
 
+    static String readBoundedUtf8(InputStream input) throws IOException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        byte[] buffer = new byte[4096];
+        int totalBytes = 0;
+        int bytesRead;
+        while ((bytesRead = input.read(buffer)) != -1) {
+            if (bytesRead == 0) {
+                throw new IOException("Air quality response read made no progress");
+            }
+            totalBytes += bytesRead;
+            if (totalBytes > RESPONSE_MAX_BYTES) {
+                throw new IOException("Air quality response is too large");
+            }
+            output.write(buffer, 0, bytesRead);
+        }
+        return decodeUtf8(output.toByteArray());
+    }
+
     private static boolean isMimeToken(String value) {
         if (value.length() == 0) {
             return false;
@@ -303,18 +321,7 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
 
         InputStream input = entity.getContent();
         try {
-            ByteArrayOutputStream output = new ByteArrayOutputStream();
-            byte[] buffer = new byte[4096];
-            int totalBytes = 0;
-            int bytesRead;
-            while ((bytesRead = input.read(buffer)) != -1) {
-                totalBytes += bytesRead;
-                if (totalBytes > RESPONSE_MAX_BYTES) {
-                    throw new IOException("Air quality response is too large");
-                }
-                output.write(buffer, 0, bytesRead);
-            }
-            return decodeUtf8(output.toByteArray());
+            return readBoundedUtf8(input);
         } finally {
             input.close();
         }

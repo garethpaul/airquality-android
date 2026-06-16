@@ -37,6 +37,7 @@ Priority:
 - Quoted Content-Type parameter values may contain commas while unquoted or
   combined comma values remain invalid
 - Reject malformed UTF-8 backend responses before JSON parsing
+- Backend response reads fail when a stream reports zero progress instead of spinning indefinitely.
 - Cancel activity-owned backend requests during teardown and ignore stale
   completion callbacks
 - Keep location-gated backend requests from using default coordinates and stop

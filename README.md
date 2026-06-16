@@ -95,6 +95,7 @@ device proof.
 - `NetworkRequest` accepts only 2xx responses and rejects malformed UTF-8 after
   validating strict Content-Length syntax and reading at most 1 MiB; it closes
   response and connection resources before JSON handling.
+- Backend response reads fail when a stream reports zero progress instead of spinning indefinitely.
 - Generic NetworkRequest failure logs preserve protocol, JSON, and parameter
   categories without recording throwable stack traces, coordinate-bearing
   request URLs, or provider exception details.

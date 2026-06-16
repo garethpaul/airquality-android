@@ -51,6 +51,7 @@ LoginActivity is the only exported launcher; MainActivity is explicitly non-expo
   syntax when supplied, and remain no larger than 1 MiB before
   JSON parsing; response streams and the legacy HTTP connection manager must be
   closed.
+- Backend response reads fail when a stream reports zero progress instead of spinning indefinitely.
 - Backend requests reject automatic redirects so intermediaries cannot move the
   fixed HTTPS request to another transport target.
 - Validated location values are serialized as canonical decimal coordinates so

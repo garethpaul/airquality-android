@@ -2,7 +2,9 @@ package twitterdev.airquality;
 
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertEquals;
@@ -73,6 +75,45 @@ public class NetworkRequestTest {
         try {
             NetworkRequest.decodeUtf8(new byte[] {(byte) 0xC3, 0x28});
             fail("Expected malformed UTF-8 to be rejected");
+        } catch (IOException expected) {
+            // Expected path.
+        }
+    }
+
+    @Test
+    public void readBoundedUtf8AccumulatesFragmentedReads() throws IOException {
+        assertEquals(
+                "{\"air_quality\":\"good\"}",
+                NetworkRequest.readBoundedUtf8(
+                        new FragmentedInputStream(
+                                "{\"air_quality\":\"good\"}"
+                                        .getBytes(StandardCharsets.UTF_8),
+                                3)));
+    }
+
+    @Test
+    public void readBoundedUtf8RejectsZeroProgress() {
+        try {
+            NetworkRequest.readBoundedUtf8(new ZeroProgressInputStream());
+            fail("Expected a zero-progress response read to be rejected");
+        } catch (IOException expected) {
+            // Expected path.
+        }
+    }
+
+    @Test
+    public void readBoundedUtf8AcceptsExactResponseLimit() throws IOException {
+        byte[] body = new byte[1024 * 1024];
+        assertEquals(body.length, NetworkRequest.readBoundedUtf8(
+                new ByteArrayInputStream(body)).length());
+    }
+
+    @Test
+    public void readBoundedUtf8RejectsResponseOverLimit() {
+        try {
+            NetworkRequest.readBoundedUtf8(
+                    new ByteArrayInputStream(new byte[(1024 * 1024) + 1]));
+            fail("Expected an oversized response to be rejected");
         } catch (IOException expected) {
             // Expected path.
         }
@@ -201,6 +242,48 @@ public class NetworkRequestTest {
             fail("Expected ambiguous response media type headers to be rejected");
         } catch (IOException expected) {
             // Expected path.
+        }
+    }
+
+    private static final class FragmentedInputStream extends InputStream {
+        private final byte[] bytes;
+        private final int fragmentSize;
+        private int offset;
+
+        FragmentedInputStream(byte[] bytes, int fragmentSize) {
+            this.bytes = bytes;
+            this.fragmentSize = fragmentSize;
+        }
+
+        @Override
+        public int read() {
+            if (offset >= bytes.length) {
+                return -1;
+            }
+            return bytes[offset++] & 0xff;
+        }
+
+        @Override
+        public int read(byte[] buffer, int bufferOffset, int length) {
+            if (offset >= bytes.length) {
+                return -1;
+            }
+            int bytesRead = Math.min(Math.min(length, fragmentSize), bytes.length - offset);
+            System.arraycopy(bytes, offset, buffer, bufferOffset, bytesRead);
+            offset += bytesRead;
+            return bytesRead;
+        }
+    }
+
+    private static final class ZeroProgressInputStream extends InputStream {
+        @Override
+        public int read() {
+            return 0;
+        }
+
+        @Override
+        public int read(byte[] buffer, int offset, int length) {
+            return 0;
         }
     }
 }

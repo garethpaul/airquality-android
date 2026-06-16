@@ -1,6 +1,6 @@
 # Zero-Progress Response Read Guard
 
-Status: Planned
+Status: Completed
 
 ## Problem
 
@@ -87,3 +87,17 @@ guidance, completed plan status, and actual verification evidence.
 - Audit generated Gradle/build artifacts, exact diff, credentials, dependency
   and workflow drift, conflict markers, file modes, and whitespace before
   commit.
+
+## Completed Verification
+
+- `readBoundedUtf8RejectsZeroProgress` and the fragmented, exact-limit, and
+  oversize focused tests passed in debug and release unit-test variants.
+- repository and external-directory `make check` passed with Android lint,
+  debug and release unit tests, and debug assembly enabled.
+- Six isolated hostile mutations were rejected across the zero-progress guard,
+  production helper integration, focused tests, maintained guidance, and plan
+  completion evidence.
+- Exact-path, whitespace, conflict-marker, dependency/workflow drift,
+  generated-artifact and credential scans passed before commit.
+- No emulator, physical device, live backend response, or production stream
+  failure was exercised or claimed.

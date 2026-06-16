@@ -314,6 +314,9 @@ def main():
     component_export_plan = read_text(
         "docs/plans/2026-06-16-explicit-android-component-exports.md"
     )
+    zero_progress_read_plan = read_text(
+        "docs/plans/2026-06-16-zero-progress-response-read.md"
+    )
     device_verification = read_text("DEVICE_VERIFICATION.md")
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
@@ -742,6 +745,27 @@ def main():
         failures,
     )
     require(
+        "static String readBoundedUtf8(InputStream input) throws IOException" in network
+        and "while ((bytesRead = input.read(buffer)) != -1)" in network
+        and "if (bytesRead == 0)" in network
+        and 'throw new IOException("Air quality response read made no progress")'
+        in network
+        and "if (totalBytes > RESPONSE_MAX_BYTES)" in network
+        and "return decodeUtf8(output.toByteArray());" in network
+        and "return readBoundedUtf8(input);" in network,
+        "NetworkRequest must bound response reads and reject zero progress",
+        failures,
+    )
+    require(
+        "readBoundedUtf8AccumulatesFragmentedReads" in network_tests
+        and "readBoundedUtf8RejectsZeroProgress" in network_tests
+        and "readBoundedUtf8AcceptsExactResponseLimit" in network_tests
+        and "readBoundedUtf8RejectsResponseOverLimit" in network_tests
+        and "new ZeroProgressInputStream()" in network_tests,
+        "NetworkRequestTest must cover fragmented, zero-progress, and bounded reads",
+        failures,
+    )
+    require(
         "decodeUtf8PreservesValidJson" in network_tests
         and "decodeUtf8RejectsMalformedInput" in network_tests,
         "NetworkRequest strict UTF-8 behavior must retain focused unit coverage",
@@ -1028,6 +1052,33 @@ def main():
         require(
             contract in component_export_plan,
             f"Explicit component export plan must keep contract: {contract}",
+            failures,
+        )
+    zero_progress_guidance = (
+        "Backend response reads fail when a stream reports zero progress instead of "
+        "spinning indefinitely."
+    )
+    for document_name, document in (
+        ("README.md", readme),
+        ("SECURITY.md", security),
+        ("VISION.md", vision),
+        ("CHANGES.md", changes),
+    ):
+        require(
+            zero_progress_guidance in document,
+            f"{document_name} must document zero-progress response read rejection",
+            failures,
+        )
+    for contract in (
+        "Status: Completed",
+        "readBoundedUtf8RejectsZeroProgress",
+        "repository and external-directory `make check` passed",
+        "hostile mutations were rejected",
+        "generated-artifact and credential scans passed",
+    ):
+        require(
+            contract in zero_progress_read_plan,
+            f"Zero-progress response read plan must keep contract: {contract}",
             failures,
         )
     require(
