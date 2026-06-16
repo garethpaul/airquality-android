@@ -1,6 +1,6 @@
 # Explicit Android Component Exports
 
-Status: Planned
+Status: Completed
 
 ## Problem
 
@@ -41,8 +41,8 @@ internal explicit transition unchanged.
 
 ### U2: Add Parsed Manifest Contracts
 
-**Files:** `scripts/check_airquality_android_contracts.py` and focused test
-fixtures or helpers as needed.
+**Files:** `scripts/check_airquality_android_contracts.py`, `Makefile`, and
+focused test fixtures or helpers as needed.
 
 Parse activity declarations by fully qualified name, bind export values to the
 correct activities, require the launcher filter only on `LoginActivity`, and
@@ -83,3 +83,18 @@ intent, completed validation, and device-testing limits.
   duplicate, detached-filter, guidance, and plan-status cases.
 - Audit exact paths, generated Gradle/build artifacts, credentials, dependency
   and workflow drift, conflict markers, and whitespace before commit.
+
+## Completed Evidence
+
+- The parsed portable contract binds fully qualified activity names to their
+  export values, enforces exclusive launcher ownership, and preserves the
+  explicit Java transition.
+- Repository and external-directory `make check` passed with Java 8 and the configured Android SDK.
+- The post-build contract checked the source and generated merged manifests after lint, unit tests, and debug assembly.
+- Isolated hostile mutations were rejected for missing, reversed, unrelated,
+  duplicate, detached-filter, explicit-intent, guidance, and plan-status
+  contracts; hostile mutations were rejected without weakening the checker.
+- Exact-diff, generated-artifact, secret, dependency, workflow, shell syntax,
+  conflict-marker, and whitespace audits passed before commit.
+- No emulator or physical-device scenario was executed; launcher and in-app
+  navigation behavior still require the maintained device checklist.

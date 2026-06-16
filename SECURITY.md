@@ -24,6 +24,8 @@ Helpful reports include:
 
 ## Project Security Posture
 
+LoginActivity is the only exported launcher; MainActivity is explicitly non-exported and reached with an explicit in-app intent.
+
 - This repository appears to be an Android mobile application or sample. The active security scope is the code and documentation on the default branch.
 - Review found authentication, token, or session-related code paths; changes in those areas should receive security-focused review before merge.
 - Review found external API integrations or credential-adjacent configuration; changes in those areas should receive security-focused review before merge.

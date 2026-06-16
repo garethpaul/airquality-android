@@ -13,7 +13,8 @@ test:
 
 build:
 	@if [ -n "$$ANDROID_HOME" ] || [ -f "$(ROOT)/local.properties" ]; then \
-		cd "$(ROOT)" && "$(GRADLE)" lint test assembleDebug --no-daemon; \
+		cd "$(ROOT)" && "$(GRADLE)" lint test assembleDebug --no-daemon && \
+		$(PYTHON) "$(CHECK_SCRIPT)"; \
 	else \
 		echo "Android SDK not configured; skipping Gradle build"; \
 	fi

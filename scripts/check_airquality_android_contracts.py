@@ -133,6 +133,102 @@ def manifest_permissions():
     ]
 
 
+def qualified_component_name(package_name, component_name):
+    if component_name.startswith("."):
+        return package_name + component_name
+    if "." not in component_name:
+        return package_name + "." + component_name
+    return component_name
+
+
+def merged_manifest_paths():
+    intermediates = ROOT / "app/build/intermediates"
+    if not intermediates.is_dir():
+        return []
+
+    manifests = []
+    for path in intermediates.glob("**/AndroidManifest.xml"):
+        path_parts = path.relative_to(intermediates).parts
+        if "merged_manifests" in path_parts or (
+            "manifests" in path_parts and "full" in path_parts
+        ):
+            manifests.append(path)
+    return sorted(manifests)
+
+
+def validate_activity_exports(path, failures):
+    root = ET.parse(path).getroot()
+    package_name = root.attrib.get("package", "")
+    application = root.find("application")
+    require(application is not None, f"{path} must declare an application", failures)
+    if application is None:
+        return
+
+    activities = application.findall("activity")
+    activities_by_name = {}
+    for activity in activities:
+        component_name = activity.attrib.get(ANDROID_NS + "name", "")
+        qualified_name = qualified_component_name(package_name, component_name)
+        activities_by_name.setdefault(qualified_name, []).append(activity)
+
+    login_name = "twitterdev.airquality.LoginActivity"
+    main_name = "twitterdev.airquality.MainActivity"
+    login_activities = activities_by_name.get(login_name, [])
+    main_activities = activities_by_name.get(main_name, [])
+    require(
+        len(login_activities) == 1,
+        f"{path} must declare LoginActivity exactly once",
+        failures,
+    )
+    require(
+        len(main_activities) == 1,
+        f"{path} must declare MainActivity exactly once",
+        failures,
+    )
+    if len(login_activities) != 1 or len(main_activities) != 1:
+        return
+
+    login_activity = login_activities[0]
+    main_activity = main_activities[0]
+    require(
+        login_activity.attrib.get(ANDROID_NS + "exported") == "true",
+        f"{path} LoginActivity must be explicitly exported",
+        failures,
+    )
+    require(
+        main_activity.attrib.get(ANDROID_NS + "exported") == "false",
+        f"{path} MainActivity must be explicitly non-exported",
+        failures,
+    )
+
+    main_action = "android.intent.action.MAIN"
+    launcher_category = "android.intent.category.LAUNCHER"
+    launcher_owners = []
+    login_launcher_filters = 0
+    for activity in activities:
+        component_name = activity.attrib.get(ANDROID_NS + "name", "")
+        qualified_name = qualified_component_name(package_name, component_name)
+        for intent_filter in activity.findall("intent-filter"):
+            actions = {
+                action.attrib.get(ANDROID_NS + "name")
+                for action in intent_filter.findall("action")
+            }
+            categories = {
+                category.attrib.get(ANDROID_NS + "name")
+                for category in intent_filter.findall("category")
+            }
+            if main_action in actions and launcher_category in categories:
+                launcher_owners.append(qualified_name)
+                if activity is login_activity:
+                    login_launcher_filters += 1
+
+    require(
+        launcher_owners == [login_name] and login_launcher_filters == 1,
+        f"{path} LoginActivity must exclusively own one MAIN/LAUNCHER filter",
+        failures,
+    )
+
+
 def main():
     failures = []
 
@@ -215,6 +311,9 @@ def main():
     state_whitespace_plan = read_text(
         "docs/plans/2026-06-15-canonical-air-quality-state-whitespace.md"
     )
+    component_export_plan = read_text(
+        "docs/plans/2026-06-16-explicit-android-component-exports.md"
+    )
     device_verification = read_text("DEVICE_VERIFICATION.md")
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
@@ -230,6 +329,10 @@ def main():
         "docs/plans/2026-06-09-main-activity-location-manager-guard.md"
     )
     permissions = manifest_permissions()
+
+    validate_activity_exports(ROOT / "app/src/main/AndroidManifest.xml", failures)
+    for merged_manifest in merged_manifest_paths():
+        validate_activity_exports(merged_manifest, failures)
 
     require(
         '"https://garethpaul-app.appspot.com/api/airquality"' in network,
@@ -896,6 +999,38 @@ def main():
         failures,
     )
     require(
+        "new Intent(getApplicationContext(), MainActivity.class)" in login_activity,
+        "LoginActivity must keep an explicit in-app transition to MainActivity",
+        failures,
+    )
+    component_export_guidance = (
+        "LoginActivity is the only exported launcher; MainActivity is explicitly "
+        "non-exported and reached with an explicit in-app intent."
+    )
+    for document_name, document in (
+        ("README.md", readme),
+        ("SECURITY.md", security),
+        ("VISION.md", vision),
+        ("CHANGES.md", changes),
+    ):
+        require(
+            component_export_guidance in document,
+            f"{document_name} must document explicit activity export ownership",
+            failures,
+        )
+    for contract in (
+        "Status: Completed",
+        "Repository and external-directory `make check` passed",
+        "hostile mutations were rejected",
+        "source and generated merged manifests",
+        "No emulator or physical-device scenario was executed",
+    ):
+        require(
+            contract in component_export_plan,
+            f"Explicit component export plan must keep contract: {contract}",
+            failures,
+        )
+    require(
         ci_workflow == EXPECTED_CI_WORKFLOW,
         "GitHub Actions workflow must preserve the SDK-free matrix and exact hosted Android gate",
         failures,
@@ -909,6 +1044,12 @@ def main():
         in makefile_lines
         and 'cd "$(ROOT)" && "$(GRADLE)"' in makefile,
         "Makefile must run SDK-free and Gradle checks from the repository root",
+        failures,
+    )
+    require(
+        '"$(GRADLE)" lint test assembleDebug --no-daemon && \\' in makefile
+        and '$(PYTHON) "$(CHECK_SCRIPT)"; \\' in makefile,
+        "Makefile must preserve Gradle failure status before checking merged manifests",
         failures,
     )
     require(

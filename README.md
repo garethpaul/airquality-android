@@ -126,6 +126,8 @@ device proof.
 
 ## Security and Privacy Notes
 
+LoginActivity is the only exported launcher; MainActivity is explicitly non-exported and reached with an explicit in-app intent.
+
 - Review changes touching authentication or token handling; examples from the scan include app/src/main/java/twitterdev/airquality/LoginActivity.java, docs/plans/2026-06-08-android-build-reproducibility.md.
 - Review changes touching external API calls or credential-adjacent configuration; examples from the scan include app/build.gradle, app/src/main/AndroidManifest.xml, app/src/main/java/twitterdev/airquality/AirQualityApplication.java, app/src/main/java/twitterdev/airquality/LoginActivity.java, and 4 more.
 - Review changes touching network requests, sockets, or service endpoints; examples from the scan include .circleci/config.yml, app/build.gradle, app/src/androidTest/java/twitterdev/airquality/ApplicationTest.java, app/src/main/AndroidManifest.xml, and 6 more.

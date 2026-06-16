@@ -89,6 +89,8 @@ Contribution rules:
 
 ## Security And Privacy
 
+LoginActivity is the only exported launcher; MainActivity is explicitly non-exported and reached with an explicit in-app intent.
+
 Canonical security policy and reporting:
 
 - [`SECURITY.md`](SECURITY.md)

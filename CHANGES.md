@@ -1,5 +1,9 @@
 # Changes
 
+## 2026-06-16
+
+1. LoginActivity is the only exported launcher; MainActivity is explicitly non-exported and reached with an explicit in-app intent.
+
 ## 2026-06-15
 
 1. Pinned a Java 8-compatible test-only JSON implementation so Android JVM
