@@ -1,5 +1,13 @@
 # Changes
 
+## 2026-06-17
+
+- Documented and enforced the pinned direct OkHttp, URLConnection adapter, and
+  Okio compatibility set that Retrofit 1.6 auto-detects for TwitterKit.
+- TwitterKit's Retrofit transport intentionally receives pinned direct OkHttp,
+  URLConnection adapter, and Okio dependencies; do not remove them without
+  authenticated runtime migration evidence.
+
 ## 2026-06-16
 
 1. Signed-zero coordinates now normalize to `0.0` before backend URL encoding.

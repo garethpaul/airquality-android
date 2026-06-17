@@ -76,6 +76,9 @@ device proof.
 - Detected references to Twitter. Keep API keys, OAuth credentials, tokens, and account-specific values in local configuration only.
 - `AirQualityApplication` skips Fabric/Twitter initialization while checked-in
   credential placeholders are blank.
+- TwitterKit's Retrofit transport intentionally receives pinned direct OkHttp,
+  URLConnection adapter, and Okio dependencies; do not remove them without
+  authenticated runtime migration evidence.
 - `NetworkRequest.buildUrl` trims and validates latitude and longitude, then
   sends canonical decimal coordinate values through URL encoding so Java-only
   numeric syntax cannot cross the backend boundary; signed-zero coordinates normalize to `0.0`.

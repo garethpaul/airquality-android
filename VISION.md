@@ -70,6 +70,9 @@ Next priorities:
 - Evaluate Gradle runtime, Android plugin, and SDK modernization together in a
   dedicated compatibility pass; wrapper hardening is separate
 - Replace deprecated Fabric/Twitter login dependencies with maintained options
+- TwitterKit's Retrofit transport intentionally receives pinned direct OkHttp,
+  URLConnection adapter, and Okio dependencies; do not remove them without
+  authenticated runtime migration evidence.
 - Move synchronous networking and Apache HTTP usage to modern Android APIs
 - Add tests around URL construction, location handling, and failure states
 - Execute the device verification matrix on an authorized emulator and

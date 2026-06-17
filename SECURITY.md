@@ -94,6 +94,10 @@ required by Android Gradle Plugin 1.2.3. Review all four wrapper files together;
 the SDK-free baseline rejects drift from Gradle's published wrapper JAR and
 distribution SHA-256 values.
 
+TwitterKit's Retrofit transport intentionally receives pinned direct OkHttp,
+URLConnection adapter, and Okio dependencies; do not remove them without
+authenticated runtime migration evidence.
+
 Dependency updates should come from trusted package managers and should keep lockfiles in sync when lockfiles exist. Do not commit credentials, private keys, tokens, generated secrets, or machine-local configuration. If a vulnerability depends on a compromised package, typosquatting risk, insecure transitive dependency, or unsafe build step, include the package name, affected version, and the path through which it is used.
 
 ## Safe Research Guidelines

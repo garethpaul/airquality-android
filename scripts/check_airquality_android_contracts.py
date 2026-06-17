@@ -320,6 +320,9 @@ def main():
     signed_zero_coordinate_plan = read_text(
         "docs/plans/2026-06-16-signed-zero-coordinate-serialization.md"
     )
+    transport_ownership_plan = read_text(
+        "docs/plans/2026-06-17-001-fix-document-twitterkit-okhttp-transport-ownership-plan.md"
+    )
     device_verification = read_text("DEVICE_VERIFICATION.md")
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
@@ -335,6 +338,29 @@ def main():
         "docs/plans/2026-06-09-main-activity-location-manager-guard.md"
     )
     permissions = manifest_permissions()
+
+    for dependency in (
+        "com.squareup.retrofit:retrofit:1.6.1",
+        "com.squareup.okhttp:okhttp-urlconnection:2.0.0",
+        "com.squareup.okhttp:okhttp:2.0.0",
+        "com.squareup.okio:okio:1.0.1",
+    ):
+        require(
+            app_build.count(f"compile '{dependency}'") == 1,
+            f"app/build.gradle must retain one pinned transport dependency: {dependency}",
+            failures,
+        )
+    require(
+        "Retrofit 1.6 auto-detects this set and gives TwitterKit an OkHttp transport."
+        in app_build,
+        "app/build.gradle must explain the legacy TwitterKit OkHttp compatibility set",
+        failures,
+    )
+    require(
+        "com.twitter.sdk.android:twitter:1.5.1@aar" in app_build,
+        "app/build.gradle must retain the reviewed TwitterKit dependency",
+        failures,
+    )
 
     validate_activity_exports(ROOT / "app/src/main/AndroidManifest.xml", failures)
     for merged_manifest in merged_manifest_paths():
@@ -1082,6 +1108,34 @@ def main():
         require(
             zero_progress_guidance in document,
             f"{document_name} must document zero-progress response read rejection",
+            failures,
+        )
+    transport_ownership_guidance = (
+        "TwitterKit's Retrofit transport intentionally receives pinned direct OkHttp, "
+        "URLConnection adapter, and Okio dependencies; do not remove them without "
+        "authenticated runtime migration evidence."
+    )
+    for document_name, document in (
+        ("README.md", readme),
+        ("SECURITY.md", security),
+        ("VISION.md", vision),
+        ("CHANGES.md", changes),
+    ):
+        require(
+            transport_ownership_guidance in " ".join(document.split()),
+            f"{document_name} must document TwitterKit transport dependency ownership",
+            failures,
+        )
+    for contract in (
+        "Status: Completed",
+        "post-change `compile` graph",
+        "repository-root and external-directory `make check`",
+        "hostile mutations",
+        "No emulator, physical-device, Twitter authentication, or live backend",
+    ):
+        require(
+            contract in transport_ownership_plan,
+            f"Transport ownership plan must keep contract: {contract}",
             failures,
         )
     for contract in (
