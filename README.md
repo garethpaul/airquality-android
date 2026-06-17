@@ -75,7 +75,8 @@ device proof.
 
 - Detected references to Twitter. Keep API keys, OAuth credentials, tokens, and account-specific values in local configuration only.
 - `AirQualityApplication` skips Fabric/Twitter initialization while checked-in
-  credential placeholders are blank.
+  credential placeholders are blank, and `LoginActivity` stops before Twitter
+  session access while displaying the unavailable configuration state.
 - TwitterKit's Retrofit transport intentionally receives pinned direct OkHttp,
   URLConnection adapter, and Okio dependencies; do not remove them without
   authenticated runtime migration evidence.

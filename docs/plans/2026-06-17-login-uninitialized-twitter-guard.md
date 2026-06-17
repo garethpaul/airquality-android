@@ -1,6 +1,6 @@
 # Credential-Aware Twitter Login Startup Guard
 
-Status: Planned
+Status: Completed
 
 ## Problem
 
@@ -59,8 +59,8 @@ drift apart.
 
 Check the shared predicate before touching TwitterKit. In the unavailable
 path, leave the activity usable, explicitly disable the login button, and
-present a maintained string-resource message. Keep the configured path's session
-redirect and callback setup unchanged.
+present a maintained string-resource message. Keep the configured path's
+session redirect and callback setup unchanged.
 
 ### U3: Add Durable Contracts
 
@@ -76,7 +76,7 @@ remove, reorder, duplicate, or weaken the guard and its user-visible state.
 
 - Blank checked-in credentials make the application skip Fabric and make the
   launcher avoid `Twitter.getSessionManager()`.
-- The unavailable launcher hides or disables the login control and renders the
+- The unavailable launcher disables the login control and renders the
   configuration message without navigating away.
 - Configured credentials with an active session still navigate directly to
   `MainActivity`.
@@ -113,4 +113,16 @@ remove, reorder, duplicate, or weaken the guard and its user-visible state.
 
 ## Completed Verification
 
-To be recorded after implementation and validation.
+- The installed TwitterKit 1.5.1 bytecode confirmed that
+  `Twitter.getSessionManager()` throws when `Fabric.with(...)` has not started
+  the kit, reproducing the checked-in credential boundary without live auth.
+- The SDK-free checker failed before implementation on the missing shared
+  predicate, guard ordering, unavailable UI, and completed-plan contracts.
+- The focused `AirQualityApplicationTest` passed under Java 8 and API 22.
+- Android lint, debug and release unit tests, and debug assembly passed; lint
+  retained only the documented legacy target-SDK modernization warning.
+- Repository and external-directory `make check`, eleven hostile mutations, exact
+  diff, generated-artifact, dependency/workflow drift, and credential scan
+  results are recorded by the final validation pass.
+- No emulator, physical device, live Twitter authentication, or provider
+  behavior was exercised or claimed.

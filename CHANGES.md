@@ -2,6 +2,8 @@
 
 ## 2026-06-17
 
+- Prevented the credential-free launcher from accessing TwitterKit before
+  Fabric initialization and added an explicit unavailable login state.
 - Documented and enforced the pinned direct OkHttp, URLConnection adapter, and
   Okio compatibility set that Retrofit 1.6 auto-detects for TwitterKit.
 - TwitterKit's Retrofit transport intentionally receives pinned direct OkHttp,

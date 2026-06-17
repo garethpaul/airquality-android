@@ -239,9 +239,14 @@ def main():
     main_activity_tests = read_text(
         "app/src/test/java/twitterdev/airquality/MainActivityTest.java"
     )
+    application_tests = read_text(
+        "app/src/test/java/twitterdev/airquality/AirQualityApplicationTest.java"
+    )
     root_build = read_text("build.gradle")
     app_build = read_text("app/build.gradle")
     application = read_text("app/src/main/java/twitterdev/airquality/AirQualityApplication.java")
+    login_layout = read_text("app/src/main/res/layout/activity_login.xml")
+    strings = read_text("app/src/main/res/values/strings.xml")
     manifest = read_text("app/src/main/AndroidManifest.xml")
     sensor_plan = read_text("docs/plans/2026-06-09-main-activity-sensor-lifecycle-guard.md")
     editor_metadata_plan = read_text("docs/plans/2026-06-09-editor-metadata-ignore.md")
@@ -333,6 +338,9 @@ def main():
     changes = read_text("CHANGES.md")
     credential_plan = read_text(
         "docs/plans/2026-06-09-application-credential-initialization-guard.md"
+    )
+    login_startup_plan = read_text(
+        "docs/plans/2026-06-17-login-uninitialized-twitter-guard.md"
     )
     location_manager_plan = read_text(
         "docs/plans/2026-06-09-main-activity-location-manager-guard.md"
@@ -1190,15 +1198,78 @@ def main():
     )
     require(
         'private static final String TAG = "AirQualityApplication"' in application
-        and "private boolean hasTwitterCredentials()" in application
+        and "static boolean isTwitterKitConfigured()" in application
+        and "private static boolean isTwitterKitConfigured()" not in application
         and "TWITTER_KEY.trim().length() > 0" in application
         and "TWITTER_SECRET.trim().length() > 0" in application
-        and "if (!hasTwitterCredentials())" in application
+        and "if (!isTwitterKitConfigured())" in application
         and 'Log.w(TAG, "Twitter credentials unavailable; skipping Fabric initialization")'
         in application
-        and application.index("if (!hasTwitterCredentials())")
+        and application.index("if (!isTwitterKitConfigured())")
         < application.index("TwitterAuthConfig authConfig"),
         "AirQualityApplication must skip Fabric initialization when credentials are blank",
+        failures,
+    )
+    login_on_create = java_method(
+        login_activity, "protected void onCreate(Bundle savedInstanceState)"
+    )
+    require(
+        contains_in_order(
+            login_on_create,
+            "if (!AirQualityApplication.isTwitterKitConfigured())",
+            "loginButton.setEnabled(false)",
+            "unavailableMessage.setVisibility(View.VISIBLE)",
+            "return;",
+            "Twitter.getSessionManager()",
+        ),
+        "LoginActivity must stop before Twitter session access when TwitterKit is unconfigured",
+        failures,
+    )
+    require(
+        "TWITTER_KEY" not in login_activity
+        and "TWITTER_SECRET" not in login_activity
+        and ".trim()" not in login_on_create,
+        "LoginActivity must reuse the application TwitterKit configuration predicate",
+        failures,
+    )
+    require(
+        "checkedInBuildLeavesTwitterKitUnconfigured" in application_tests
+        and "assertFalse(AirQualityApplication.isTwitterKitConfigured())"
+        in application_tests,
+        "AirQualityApplication tests must cover the checked-in TwitterKit state",
+        failures,
+    )
+    require(
+        "if (currentSession == null)" in login_on_create
+        and "loginButton.setCallback" in login_on_create
+        and "        } else {\n            moveToLogin();\n        }" in login_on_create,
+        "LoginActivity must preserve configured callback and active-session flows",
+        failures,
+    )
+    require(
+        'android:id="@+id/twitter_unavailable_message"' in login_layout
+        and 'android:visibility="gone"' in login_layout
+        and 'android:text="@string/twitter_login_unavailable"' in login_layout
+        and '<string name="twitter_login_unavailable">' in strings,
+        "LoginActivity must provide a hidden configuration-unavailable message",
+        failures,
+    )
+    require(
+        "Status: Completed" in login_startup_plan
+        and "make check" in login_startup_plan
+        and "external-directory" in login_startup_plan
+        and "hostile mutations" in login_startup_plan
+        and "credential scan" in login_startup_plan,
+        "login startup guard plan must record completed verification",
+        failures,
+    )
+    require(
+        "stops before Twitter" in readme
+        and "session access while displaying" in readme
+        and "same configuration predicate" in security
+        and "uninitialized TwitterKit" in vision
+        and "explicit unavailable login state" in changes,
+        "maintained guidance must describe the credential-aware login startup guard",
         failures,
     )
     require(

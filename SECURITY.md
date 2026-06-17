@@ -6,6 +6,11 @@ The supported security scope for `airquality-android` is the current default bra
 
 Project summary: AirQuality App for Android
 
+The public credential-free build must keep TwitterKit initialization and
+launcher session access behind the same configuration predicate. The launcher
+disables login and reports the unavailable configuration instead of invoking
+an uninitialized authentication SDK.
+
 ## Reporting a Vulnerability
 
 Please report suspected vulnerabilities through GitHub's private vulnerability reporting or by opening a draft GitHub Security Advisory for `garethpaul/airquality-android` when that option is available. If GitHub does not show a private reporting option for this repository, contact the repository owner through GitHub and avoid posting exploit details publicly until the issue can be assessed.

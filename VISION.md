@@ -58,6 +58,8 @@ Priority:
 - Keep Twitter login activity-result handling guarded when a session already
   exists
 - Keep Twitter login callback setup guarded when layouts are stale
+- Keep the credential-free launcher from accessing an uninitialized TwitterKit
+  session manager, and expose the unavailable login configuration to users
 - Keep IDE workspace metadata out of the shared Android project baseline
 - Keep GitHub Actions aligned with the SDK-free Python `make check` baseline
 - Keep the legacy Gradle runtime behind a checksum-verified generated wrapper
