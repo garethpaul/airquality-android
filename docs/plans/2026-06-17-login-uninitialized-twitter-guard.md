@@ -26,7 +26,8 @@ the checked-in credential-free application can crash as soon as it launches.
    `AirQualityApplication`; `LoginActivity` must not duplicate blank-string
    credential logic.
 2. `LoginActivity` must determine whether TwitterKit is available before any
-   call to `Twitter.getSessionManager()` or login-button callback setup.
+   call to `Twitter.getSessionManager()`, login-button callback setup, or
+   login-button activity-result forwarding.
 3. When TwitterKit is unavailable, the launcher must remain open, avoid all
    TwitterKit session APIs, explicitly disable the unusable login control, and
    show a concise configuration-unavailable message.
@@ -58,9 +59,10 @@ drift apart.
 `app/src/main/res/values/strings.xml`
 
 Check the shared predicate before touching TwitterKit. In the unavailable
-path, leave the activity usable, explicitly disable the login button, and
-present a maintained string-resource message. Keep the configured path's
-session redirect and callback setup unchanged.
+path, leave the activity usable, explicitly disable the login button, ignore
+activity-result callbacks before TwitterKit forwarding, and present a
+maintained string-resource message. Keep the configured path's session redirect
+and callback setup unchanged.
 
 ### U3: Add Durable Contracts
 
@@ -75,15 +77,17 @@ remove, reorder, duplicate, or weaken the guard and its user-visible state.
 ## Test Scenarios
 
 - Blank checked-in credentials make the application skip Fabric and make the
-  launcher avoid `Twitter.getSessionManager()`.
+  launcher avoid `Twitter.getSessionManager()` and login-button
+  activity-result forwarding.
 - The unavailable launcher disables the login control and renders the
   configuration message without navigating away.
 - Configured credentials with an active session still navigate directly to
   `MainActivity`.
 - Configured credentials without a session still attach the success/failure
   callback to the login button.
-- Removing the shared predicate, moving the session lookup before the guard,
-  or restoring an interactive unusable button fails the maintained gate.
+- Removing the shared predicate, moving the session lookup or activity-result
+  forwarding before the guard, or restoring an interactive unusable button
+  fails the maintained gate.
 - Repository and external-directory gates remain green.
 
 ## Scope Boundaries
@@ -117,12 +121,14 @@ remove, reorder, duplicate, or weaken the guard and its user-visible state.
   `Twitter.getSessionManager()` throws when `Fabric.with(...)` has not started
   the kit, reproducing the checked-in credential boundary without live auth.
 - The SDK-free checker failed before implementation on the missing shared
-  predicate, guard ordering, unavailable UI, and completed-plan contracts.
+  predicate, guard ordering, unavailable UI, activity-result forwarding, and
+  completed-plan contracts.
 - The focused `AirQualityApplicationTest` passed under Java 8 and API 22.
 - Android lint, debug and release unit tests, and debug assembly passed; lint
   retained only the documented legacy target-SDK modernization warning.
-- Repository and external-directory `make check`, eleven hostile mutations, exact
-  diff, generated-artifact, dependency/workflow drift, and credential scan
-  results are recorded by the final validation pass.
+- Repository and external-directory `make check`, activity-result guard
+  review, eleven hostile mutations, exact diff, generated-artifact,
+  dependency/workflow drift, and credential scan results are recorded by the
+  final validation pass.
 - No emulator, physical device, live Twitter authentication, or provider
   behavior was exercised or claimed.

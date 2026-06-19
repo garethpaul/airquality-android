@@ -3,7 +3,8 @@
 ## 2026-06-17
 
 - Prevented the credential-free launcher from accessing TwitterKit before
-  Fabric initialization and added an explicit unavailable login state.
+  Fabric initialization, including activity-result forwarding, and added an
+  explicit unavailable login state.
 - Documented and enforced the pinned direct OkHttp, URLConnection adapter, and
   Okio compatibility set that Retrofit 1.6 auto-detects for TwitterKit.
 - TwitterKit's Retrofit transport intentionally receives pinned direct OkHttp,
@@ -117,8 +118,9 @@
 1. Guarded the Twitter login button lookup before setting login callbacks.
 2. Added static checker coverage for login button callback setup.
 
-1. Guarded `LoginActivity.onActivityResult` so already-authenticated sessions
-   do not dereference an uninitialized Twitter login button.
+1. Guarded `LoginActivity.onActivityResult` so credential-free and
+   already-authenticated sessions do not dereference an uninitialized Twitter
+   login button.
 2. Added static checker coverage for the login button lifecycle guard.
 
 1. Wired the existing connection and socket timeout settings into the actual

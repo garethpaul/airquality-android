@@ -80,6 +80,9 @@ public class LoginActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (!AirQualityApplication.isTwitterKitConfigured()) {
+            return;
+        }
         if (loginButton != null) {
             loginButton.onActivityResult(requestCode, resultCode, data);
         }

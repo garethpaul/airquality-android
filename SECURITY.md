@@ -6,10 +6,10 @@ The supported security scope for `airquality-android` is the current default bra
 
 Project summary: AirQuality App for Android
 
-The public credential-free build must keep TwitterKit initialization and
-launcher session access behind the same configuration predicate. The launcher
-disables login and reports the unavailable configuration instead of invoking
-an uninitialized authentication SDK.
+The public credential-free build must keep TwitterKit initialization, launcher
+session access, and login activity-result forwarding behind the same
+configuration predicate. The launcher disables login and reports the unavailable
+configuration instead of invoking an uninitialized authentication SDK.
 
 ## Reporting a Vulnerability
 

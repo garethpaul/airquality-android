@@ -1058,10 +1058,13 @@ def main():
     result_method = login_activity[result_method_start:] if result_method_start >= 0 else ""
     require(
         "if (loginButton != null)" in result_method
+        and "AirQualityApplication.isTwitterKitConfigured()" in result_method
         and "loginButton.onActivityResult(requestCode, resultCode, data)" in result_method
+        and result_method.index("AirQualityApplication.isTwitterKitConfigured()")
+        < result_method.index("loginButton.onActivityResult(requestCode, resultCode, data)")
         and result_method.index("if (loginButton != null)")
         < result_method.index("loginButton.onActivityResult(requestCode, resultCode, data)"),
-        "LoginActivity must guard loginButton before forwarding activity results",
+        "LoginActivity must guard TwitterKit configuration and loginButton before forwarding activity results",
         failures,
     )
     require(
@@ -1259,14 +1262,15 @@ def main():
         and "make check" in login_startup_plan
         and "external-directory" in login_startup_plan
         and "hostile mutations" in login_startup_plan
+        and "activity-result" in login_startup_plan
         and "credential scan" in login_startup_plan,
         "login startup guard plan must record completed verification",
         failures,
     )
     require(
         "stops before Twitter" in readme
-        and "session access while displaying" in readme
-        and "same configuration predicate" in security
+        and "session access or login activity-result forwarding" in readme
+        and "same configuration predicate" in " ".join(security.split())
         and "uninitialized TwitterKit" in vision
         and "explicit unavailable login state" in changes,
         "maintained guidance must describe the credential-aware login startup guard",

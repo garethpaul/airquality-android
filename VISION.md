@@ -55,8 +55,8 @@ Priority:
 - Keep accelerometer registration guarded for devices or layouts without an
   available sensor service
 - Keep sensor events and display views guarded before accelerometer rendering
-- Keep Twitter login activity-result handling guarded when a session already
-  exists
+- Keep Twitter login activity-result handling guarded when TwitterKit is
+  unconfigured or the login button is absent
 - Keep Twitter login callback setup guarded when layouts are stale
 - Keep the credential-free launcher from accessing an uninitialized TwitterKit
   session manager, and expose the unavailable login configuration to users
