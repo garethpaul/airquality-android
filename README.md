@@ -58,9 +58,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Testing and Verification
 
 - `/bin/sh scripts/run-make.sh check` - clear inherited Make startup and option
-  controls, resolve the physical script path with fixed system tools, reject
-  caller options, assignments, extra makefiles, extra arguments, and unknown
-  targets, then run the fixed repository Makefile
+  controls, resolve the physical script path byte-safely with fixed system
+  tools, reject caller options, assignments, extra makefiles, extra arguments,
+  and unknown targets, then run the fixed repository Makefile
 - `/bin/sh scripts/run-make.sh lint` - run only the bounded static syntax target
   used by the Make authority harness
 - `./gradlew test` or Android Studio's test runner when the SDK is configured

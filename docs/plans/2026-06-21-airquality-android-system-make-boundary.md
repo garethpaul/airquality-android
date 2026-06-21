@@ -21,8 +21,10 @@ Gradle replacement could also redirect or suppress the repository checks.
   fail before Make starts.
 - Resolved the actual entrypoint through at most 40 relative or absolute
   symbolic links with fixed `/usr/bin/readlink`, `/usr/bin/dirname`, and
-  `/bin/pwd`, preventing `PATH` substitution and external symlink directories
-  from selecting a different repository root.
+  `/bin/pwd`. Sentinel capture of raw `readlink -n` output preserves trailing
+  newline bytes; broken and overlong chains fail closed, preventing `PATH`
+  substitution, newline-bearing targets, and external symlink directories from
+  selecting a different repository root.
 - Froze `/bin/sh`, the canonical repository root, and literal Python and Gradle
   selections across every public target.
 - Defined pre-parse startup programs as caller authority. The canonical entry

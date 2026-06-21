@@ -12,7 +12,9 @@
   starts. Direct callers who bypass the entrypoint retain pre-parse authority.
 - Resolved the physical verification script through a bounded symbolic-link
   loop and absolute system tools so hostile `PATH` entries or external symlink
-  locations cannot redirect the selected checkout root.
+  locations cannot redirect the selected checkout root. Symbolic-link targets
+  are captured without stripping trailing newline bytes, and broken or
+  overlong chains fail closed.
 
 ## 2026-06-17
 

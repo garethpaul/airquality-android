@@ -86,12 +86,21 @@ while [ -L "$script_path" ]; do
     exit 66
   fi
 
-  link_target=$(/usr/bin/readlink "$script_path")
+  if ! link_target_with_sentinel=$(/usr/bin/readlink -n "$script_path" && printf x); then
+    printf '%s\\n' 'repository verification entrypoint could not read symbolic link' >&2
+    exit 66
+  fi
+  link_target=${link_target_with_sentinel%x}
   case $link_target in
     /*) script_path=$link_target ;;
     *) script_path=$(/usr/bin/dirname "$script_path")/$link_target ;;
   esac
 done
+
+if [ ! -f "$script_path" ]; then
+  printf '%s\\n' 'repository verification entrypoint did not resolve to a regular file' >&2
+  exit 66
+fi
 
 script_dir=$(CDPATH='' cd -P "$(/usr/bin/dirname "$script_path")" && /bin/pwd -P)
 ROOT=$(CDPATH='' cd -P "$script_dir/.." && /bin/pwd -P)
@@ -1249,7 +1258,10 @@ def main():
         "10 unsafe mode rejections" in make_authority_test
         and "startup caller-authority proof" in make_authority_test
         and "sanitized canonical entrypoint" in make_authority_test
-        and "PATH and symlink root resistance" in make_authority_test
+        and "PATH and byte-safe symlink root resistance including trailing and internal newlines" in make_authority_test
+        and "broken and overlong symlink failure" in make_authority_test
+        and "LF_TARGET_NAME='physical\n'" in make_authority_test
+        and 'MIXED_TARGET_NAME="physical target\'s\nmiddle"' in make_authority_test
         and "strict target-only entrypoint" in make_authority_test
         and "GNU Make 4.x eval controls when available" in make_authority_test
         and "later recipe rejection" in make_authority_test,

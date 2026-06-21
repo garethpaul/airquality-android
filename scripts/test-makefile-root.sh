@@ -52,6 +52,12 @@ run_make() {
   (export ANDROID_HOME; cd "$CONTROL_DIR" && AIRQUALITY_ANDROID_COMMAND_LOG="$LOG" /usr/bin/make --no-print-directory -f "$MAKEFILE" "PYTHON=$FAKE_PYTHON" "GRADLE=$FAKE_GRADLE" "$@")
 }
 
+run_entrypoint_with_zero() {
+  synthetic_zero=$1
+  shift
+  /bin/sh -c 'entrypoint=$1; shift; . "$entrypoint"' "$synthetic_zero" "$ROOT/scripts/run-make.sh" "$@"
+}
+
 : > "$LOG"
 ANDROID_HOME='' run_make lint test > "$TEMP_ROOT/check.out"
 grep -Fq "python:-m py_compile $ROOT/scripts/check_airquality_android_contracts.py" "$LOG"
@@ -122,6 +128,87 @@ if ! (cd "$CONTROL_DIR" && /bin/sh "$SYMLINK_ROOT/scripts/run-make.sh" lint) > "
 fi
 if [ -e "$SYMLINK_MARKER" ]; then
   printf '%s\n' 'RED: external symlink invocation selected the symlink directory' >&2
+  AUTHORITY_FAILURES=$((AUTHORITY_FAILURES + 1))
+fi
+
+LF_SYMLINK_ROOT="$TEMP_ROOT/lf-symlink-checkout"
+LF_SYMLINK_MARKER="$TEMP_ROOT/lf-symlink-root-executed"
+LF_TARGET_NAME='physical
+'
+mkdir -p "$LF_SYMLINK_ROOT/scripts"
+cat > "$LF_SYMLINK_ROOT/Makefile" <<EOF
+lint:
+	@/usr/bin/touch '$LF_SYMLINK_MARKER'
+EOF
+ln -s "$ROOT/scripts/run-make.sh" "$LF_SYMLINK_ROOT/scripts/$LF_TARGET_NAME"
+ln -s "$LF_TARGET_NAME" "$LF_SYMLINK_ROOT/scripts/run-make.sh"
+if ! (cd "$CONTROL_DIR" && /bin/sh "$LF_SYMLINK_ROOT/scripts/run-make.sh" lint) > "$TEMP_ROOT/lf-symlink-root.out" 2>&1; then
+  printf '%s\n' 'canonical entrypoint failed through a trailing-LF symlink target' >&2
+  AUTHORITY_FAILURES=$((AUTHORITY_FAILURES + 1))
+fi
+if [ -e "$LF_SYMLINK_MARKER" ]; then
+  printf '%s\n' 'RED: trailing-LF symlink target redirected the repository root' >&2
+  AUTHORITY_FAILURES=$((AUTHORITY_FAILURES + 1))
+fi
+
+MIXED_SYMLINK_ROOT="$TEMP_ROOT/mixed-symlink-checkout"
+MIXED_SYMLINK_MARKER="$TEMP_ROOT/mixed-symlink-root-executed"
+MIXED_TARGET_NAME="physical target's
+middle"
+mkdir -p "$MIXED_SYMLINK_ROOT/scripts"
+cat > "$MIXED_SYMLINK_ROOT/Makefile" <<EOF
+lint:
+	@/usr/bin/touch '$MIXED_SYMLINK_MARKER'
+EOF
+ln -s "$ROOT/scripts/run-make.sh" "$MIXED_SYMLINK_ROOT/scripts/$MIXED_TARGET_NAME"
+ln -s "$MIXED_TARGET_NAME" "$MIXED_SYMLINK_ROOT/scripts/run-make.sh"
+if ! (cd "$CONTROL_DIR" && /bin/sh "$MIXED_SYMLINK_ROOT/scripts/run-make.sh" lint) > "$TEMP_ROOT/mixed-symlink-root.out" 2>&1; then
+  printf '%s\n' 'canonical entrypoint failed through a space, quote, and internal-newline symlink chain' >&2
+  AUTHORITY_FAILURES=$((AUTHORITY_FAILURES + 1))
+fi
+if [ -e "$MIXED_SYMLINK_MARKER" ]; then
+  printf '%s\n' 'RED: mixed-byte symlink target redirected the repository root' >&2
+  AUTHORITY_FAILURES=$((AUTHORITY_FAILURES + 1))
+fi
+
+BROKEN_SYMLINK_ROOT="$TEMP_ROOT/broken-symlink-checkout"
+BROKEN_SYMLINK_MARKER="$TEMP_ROOT/broken-symlink-root-executed"
+mkdir -p "$BROKEN_SYMLINK_ROOT/scripts"
+cat > "$BROKEN_SYMLINK_ROOT/Makefile" <<EOF
+lint:
+	@/usr/bin/touch '$BROKEN_SYMLINK_MARKER'
+EOF
+ln -s missing-target "$BROKEN_SYMLINK_ROOT/scripts/run-make.sh"
+if (cd "$CONTROL_DIR" && run_entrypoint_with_zero "$BROKEN_SYMLINK_ROOT/scripts/run-make.sh" lint) > "$TEMP_ROOT/broken-symlink.out" 2>&1; then
+  printf '%s\n' 'RED: broken symlink invocation unexpectedly succeeded' >&2
+  AUTHORITY_FAILURES=$((AUTHORITY_FAILURES + 1))
+fi
+if [ -e "$BROKEN_SYMLINK_MARKER" ]; then
+  printf '%s\n' 'RED: broken symlink invocation executed an external Makefile' >&2
+  AUTHORITY_FAILURES=$((AUTHORITY_FAILURES + 1))
+fi
+
+OVERLONG_SYMLINK_ROOT="$TEMP_ROOT/overlong-symlink-checkout"
+OVERLONG_SYMLINK_MARKER="$TEMP_ROOT/overlong-symlink-root-executed"
+mkdir -p "$OVERLONG_SYMLINK_ROOT/scripts"
+cat > "$OVERLONG_SYMLINK_ROOT/Makefile" <<EOF
+lint:
+	@/usr/bin/touch '$OVERLONG_SYMLINK_MARKER'
+EOF
+ln -s "$ROOT/scripts/run-make.sh" "$OVERLONG_SYMLINK_ROOT/scripts/link-41"
+link_number=40
+while [ "$link_number" -ge 1 ]; do
+  next_link=$((link_number + 1))
+  ln -s "link-$next_link" "$OVERLONG_SYMLINK_ROOT/scripts/link-$link_number"
+  link_number=$((link_number - 1))
+done
+ln -s link-1 "$OVERLONG_SYMLINK_ROOT/scripts/run-make.sh"
+if (cd "$CONTROL_DIR" && run_entrypoint_with_zero "$OVERLONG_SYMLINK_ROOT/scripts/run-make.sh" lint) > "$TEMP_ROOT/overlong-symlink.out" 2>&1; then
+  printf '%s\n' 'RED: overlong symlink invocation unexpectedly succeeded' >&2
+  AUTHORITY_FAILURES=$((AUTHORITY_FAILURES + 1))
+fi
+if [ -e "$OVERLONG_SYMLINK_MARKER" ]; then
+  printf '%s\n' 'RED: overlong symlink invocation executed an external Makefile' >&2
   AUTHORITY_FAILURES=$((AUTHORITY_FAILURES + 1))
 fi
 
@@ -210,4 +297,4 @@ for flag in -n --just-print --dry-run --recon -t --touch -q --question -i --igno
   grep -Fq 'non-executing or error-ignoring MAKEFLAGS are not supported' "$TEMP_ROOT/mode.out"
 done
 
-printf '%s\n' 'Make authority tests passed: external root, SDK-free and SDK-backed tool selection, 2 raw Make-syntax controls, startup caller-authority proof, sanitized canonical entrypoint, PATH and symlink root resistance, strict target-only entrypoint, GNU Make 4.x eval controls when available, later recipe rejection, caller MAKEFLAGS rejection, and 10 unsafe mode rejections'
+printf '%s\n' 'Make authority tests passed: external root, SDK-free and SDK-backed tool selection, 2 raw Make-syntax controls, startup caller-authority proof, sanitized canonical entrypoint, PATH and byte-safe symlink root resistance including trailing and internal newlines, broken and overlong symlink failure, strict target-only entrypoint, GNU Make 4.x eval controls when available, later recipe rejection, caller MAKEFLAGS rejection, and 10 unsafe mode rejections'

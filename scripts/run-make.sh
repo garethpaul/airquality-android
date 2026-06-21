@@ -14,12 +14,21 @@ while [ -L "$script_path" ]; do
     exit 66
   fi
 
-  link_target=$(/usr/bin/readlink "$script_path")
+  if ! link_target_with_sentinel=$(/usr/bin/readlink -n "$script_path" && printf x); then
+    printf '%s\n' 'repository verification entrypoint could not read symbolic link' >&2
+    exit 66
+  fi
+  link_target=${link_target_with_sentinel%x}
   case $link_target in
     /*) script_path=$link_target ;;
     *) script_path=$(/usr/bin/dirname "$script_path")/$link_target ;;
   esac
 done
+
+if [ ! -f "$script_path" ]; then
+  printf '%s\n' 'repository verification entrypoint did not resolve to a regular file' >&2
+  exit 66
+fi
 
 script_dir=$(CDPATH='' cd -P "$(/usr/bin/dirname "$script_path")" && /bin/pwd -P)
 ROOT=$(CDPATH='' cd -P "$script_dir/.." && /bin/pwd -P)

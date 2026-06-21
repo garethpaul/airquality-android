@@ -99,8 +99,10 @@ which accepts only `check` or the harness-only `lint` target, clears inherited
 `MAKEFILES`, `MAKEFLAGS`, `MFLAGS`, `MAKEOVERRIDES`, and `GNUMAKEFLAGS`, and
 invokes fixed `/usr/bin/make --no-print-directory -f <checkout>/Makefile`.
 The checkout is derived from the physical entrypoint path with absolute system
-tools and at most 40 symbolic-link resolutions, so caller `PATH` changes and
-external symlink locations cannot redirect it. Options, assignments, extra
+tools and at most 40 symbolic-link resolutions. Raw `readlink -n` output is
+captured with a sentinel, preserving trailing newline bytes, so caller `PATH`
+changes, external symlink locations, and newline-bearing target names cannot
+redirect it. Broken or overlong chains fail closed. Options, assignments, extra
 makefiles, extra arguments, and unknown targets are rejected before Make starts.
 GNU Make startup programs supplied by callers who bypass this entrypoint still
 execute before the repository Makefile can inspect them and remain caller
