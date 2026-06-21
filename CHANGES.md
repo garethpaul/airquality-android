@@ -5,6 +5,10 @@
 - Bound hosted and documented verification to `/usr/bin/make` and added an
   executable authority harness covering root, shell, tool, startup-file,
   recipe, and unsafe-mode boundaries.
+- Corrected the startup-file boundary: the canonical Make entrypoint now clears
+  inherited Make startup and option variables before `/usr/bin/make`, while
+  direct pre-parse startup programs are documented and tested as caller
+  authority.
 
 ## 2026-06-17
 

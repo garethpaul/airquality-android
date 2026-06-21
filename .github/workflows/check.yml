@@ -32,7 +32,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Run SDK-free repository verification
-        run: /usr/bin/make check
+        run: /bin/sh scripts/run-make.sh check
         env:
           ANDROID_HOME: ""
           ANDROID_SDK_ROOT: ""
@@ -53,4 +53,4 @@ jobs:
           distribution: corretto
           java-version: "8"
       - name: Run full Android verification
-        run: /usr/bin/make check
+        run: /bin/sh scripts/run-make.sh check

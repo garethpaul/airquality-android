@@ -46,7 +46,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Run SDK-free repository verification
-        run: /usr/bin/make check
+        run: /bin/sh scripts/run-make.sh check
         env:
           ANDROID_HOME: ""
           ANDROID_SDK_ROOT: ""
@@ -67,7 +67,18 @@ jobs:
           distribution: corretto
           java-version: "8"
       - name: Run full Android verification
-        run: /usr/bin/make check
+        run: /bin/sh scripts/run-make.sh check
+"""
+
+EXPECTED_MAKE_ENTRYPOINT = """#!/bin/sh
+set -eu
+
+exec /usr/bin/env \\
+  -u MAKEFILES \\
+  -u MAKEFLAGS \\
+  -u MFLAGS \\
+  -u MAKEOVERRIDES \\
+  /usr/bin/make "$@"
 """
 
 EXPECTED_WRAPPER_PROPERTIES = """distributionBase=GRADLE_USER_HOME
@@ -331,6 +342,7 @@ def main():
     device_verification = read_text("DEVICE_VERIFICATION.md")
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
+    make_entrypoint = read_text("scripts/run-make.sh")
     make_authority_test = read_text("scripts/test-makefile-root.sh")
     make_authority_plan = read_text(
         "docs/plans/2026-06-21-airquality-android-system-make-boundary.md"
@@ -1171,6 +1183,11 @@ def main():
         failures,
     )
     require(
+        make_entrypoint == EXPECTED_MAKE_ENTRYPOINT,
+        "Canonical Make entrypoint must clear inherited Make control variables before fixed /usr/bin/make",
+        failures,
+    )
+    require(
         "override SHELL := /bin/sh" in makefile_lines
         and "override .SHELLFLAGS := -c" in makefile_lines
         and "$(foreach variable,PYTHON GRADLE" in makefile
@@ -1191,14 +1208,15 @@ def main():
     )
     require(
         "10 unsafe mode rejections" in make_authority_test
-        and "startup-file rejection" in make_authority_test
+        and "startup caller-authority proof" in make_authority_test
+        and "sanitized canonical entrypoint" in make_authority_test
         and "later recipe rejection" in make_authority_test,
-        "Make authority harness must retain startup, recipe, and unsafe-mode coverage",
+        "Make authority harness must retain startup authority, sanitized entrypoint, recipe, and unsafe-mode coverage",
         failures,
     )
     require(
         "Status: Completed" in make_authority_plan
-        and "/usr/bin/make check" in make_authority_plan
+        and "/bin/sh scripts/run-make.sh check" in make_authority_plan
         and "scripts/test-makefile-root.sh" in make_authority_plan,
         "System Make authority plan must record completed executable verification",
         failures,

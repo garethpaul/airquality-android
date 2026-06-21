@@ -37,11 +37,22 @@ for variable in PYTHON GRADLE; do
 done
 
 STARTUP="$TEMP_ROOT/startup.mk"
-printf '%s\n' '$(error startup file executed)' > "$STARTUP"
-if (cd "$CONTROL_DIR" && MAKEFILES="$STARTUP" /usr/bin/make --no-print-directory -f "$MAKEFILE" "PYTHON=$FAKE_PYTHON" "GRADLE=$FAKE_GRADLE" lint) > "$TEMP_ROOT/startup.out" 2>&1; then
+STARTUP_MARKER="$TEMP_ROOT/startup-executed"
+cat > "$STARTUP" <<EOF
+\$(shell /usr/bin/touch '$STARTUP_MARKER')
+MAKEFILES :=
+MAKEFLAGS :=
+MFLAGS :=
+MAKEOVERRIDES :=
+EOF
+(cd "$CONTROL_DIR" && MAKEFILES="$STARTUP" /usr/bin/make --no-print-directory -f "$MAKEFILE" "PYTHON=$FAKE_PYTHON" "GRADLE=$FAKE_GRADLE" lint) > "$TEMP_ROOT/startup.out" 2>&1 || :
+test -f "$STARTUP_MARKER"
+
+rm -f "$STARTUP_MARKER"
+if ! (cd "$CONTROL_DIR" && AIRQUALITY_ANDROID_COMMAND_LOG="$LOG" MAKEFILES="$STARTUP" MAKEFLAGS=-s MFLAGS=-s MAKEOVERRIDES=hostile /bin/sh "$ROOT/scripts/run-make.sh" --no-print-directory -f "$MAKEFILE" "PYTHON=$FAKE_PYTHON" "GRADLE=$FAKE_GRADLE" lint) > "$TEMP_ROOT/sanitized-startup.out" 2>&1; then
   exit 1
 fi
-grep -Eq 'startup file executed|MAKEFILES must be empty' "$TEMP_ROOT/startup.out"
+test ! -e "$STARTUP_MARKER"
 
 LATER="$TEMP_ROOT/later.mk"
 printf '%s\n' 'lint:' '>@printf replaced' > "$LATER"
@@ -61,4 +72,4 @@ for flag in -n --just-print --dry-run --recon -t --touch -q --question -i --igno
   grep -Fq 'non-executing or error-ignoring MAKEFLAGS are not supported' "$TEMP_ROOT/mode.out"
 done
 
-printf '%s\n' 'Make authority tests passed: external root, SDK-free and SDK-backed tool selection, 2 raw Make-syntax controls, startup-file rejection, later recipe rejection, caller MAKEFLAGS rejection, and 10 unsafe mode rejections'
+printf '%s\n' 'Make authority tests passed: external root, SDK-free and SDK-backed tool selection, 2 raw Make-syntax controls, startup caller-authority proof, sanitized canonical entrypoint, later recipe rejection, caller MAKEFLAGS rejection, and 10 unsafe mode rejections'
