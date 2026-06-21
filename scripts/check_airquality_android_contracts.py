@@ -46,7 +46,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Run SDK-free repository verification
-        run: make check
+        run: /usr/bin/make check
         env:
           ANDROID_HOME: ""
           ANDROID_SDK_ROOT: ""
@@ -67,7 +67,7 @@ jobs:
           distribution: corretto
           java-version: "8"
       - name: Run full Android verification
-        run: make check
+        run: /usr/bin/make check
 """
 
 EXPECTED_WRAPPER_PROPERTIES = """distributionBase=GRADLE_USER_HOME
@@ -331,6 +331,10 @@ def main():
     device_verification = read_text("DEVICE_VERIFICATION.md")
     ci_workflow = read_text(".github/workflows/check.yml")
     makefile = read_text("Makefile")
+    make_authority_test = read_text("scripts/test-makefile-root.sh")
+    make_authority_plan = read_text(
+        "docs/plans/2026-06-21-airquality-android-system-make-boundary.md"
+    )
     makefile_lines = set(makefile.splitlines())
     readme = read_text("README.md")
     vision = read_text("VISION.md")
@@ -1167,20 +1171,36 @@ def main():
         failures,
     )
     require(
-        "override ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))"
-        in makefile_lines
-        and "PYTHON ?= python3" in makefile_lines
-        and "GRADLE ?= $(ROOT)/gradlew" in makefile_lines
-        and "CHECK_SCRIPT := $(ROOT)/scripts/check_airquality_android_contracts.py"
-        in makefile_lines
-        and 'cd "$(ROOT)" && "$(GRADLE)"' in makefile,
-        "Makefile must run SDK-free and Gradle checks from the repository root",
+        "override SHELL := /bin/sh" in makefile_lines
+        and "override .SHELLFLAGS := -c" in makefile_lines
+        and "$(foreach variable,PYTHON GRADLE" in makefile
+        and "MAKEFLAGS must not be overridden" in makefile
+        and "MAKEFILES must be empty" in makefile
+        and "override ROOT := $(shell" in makefile
+        and "override GRADLE := $(ROOT)/gradlew" in makefile_lines
+        and "scripts/test-makefile-root.sh" in makefile
+        and "cd '$(REPOSITORY_ROOT_LITERAL)'" in makefile,
+        "Makefile must preserve repository shell, root, mode, Python, and Gradle authority",
         failures,
     )
     require(
-        '"$(GRADLE)" lint test assembleDebug --no-daemon && \\' in makefile
-        and '$(PYTHON) "$(CHECK_SCRIPT)"; \\' in makefile,
+        "'$(REPOSITORY_GRADLE_LITERAL)' lint test assembleDebug --no-daemon && \\" in makefile
+        and "'$(REPOSITORY_PYTHON_LITERAL)' '$(REPOSITORY_CHECK_SCRIPT_LITERAL)'; \\" in makefile,
         "Makefile must preserve Gradle failure status before checking merged manifests",
+        failures,
+    )
+    require(
+        "10 unsafe mode rejections" in make_authority_test
+        and "startup-file rejection" in make_authority_test
+        and "later recipe rejection" in make_authority_test,
+        "Make authority harness must retain startup, recipe, and unsafe-mode coverage",
+        failures,
+    )
+    require(
+        "Status: Completed" in make_authority_plan
+        and "/usr/bin/make check" in make_authority_plan
+        and "scripts/test-makefile-root.sh" in make_authority_plan,
+        "System Make authority plan must record completed executable verification",
         failures,
     )
     require(

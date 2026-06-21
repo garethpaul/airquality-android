@@ -57,9 +57,11 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 ## Testing and Verification
 
-- `make check` - run SDK-free static contracts and skip Gradle when no Android SDK is configured
+- `/usr/bin/make check` - run the Make authority harness and SDK-free static
+  contracts, then skip Gradle when no Android SDK is configured
 - `./gradlew test` or Android Studio's test runner when the SDK is configured
-- GitHub Actions preserves the SDK-free `make check` baseline on Python 3.10,
+- GitHub Actions enters through `/usr/bin/make` and preserves the SDK-free
+  baseline on Python 3.10,
   3.12, and 3.14 and runs a separate Java 8/API 22 Android gate on fixed Ubuntu
   24.04 runners. Superseded branch runs are cancelled.
 
@@ -70,6 +72,9 @@ physical-device matrix. It requires exact-commit toolchain evidence for launch,
 permissions, location, lifecycle, backend failures, and log redaction, and it
 keeps unexecuted scenarios explicit rather than treating static checks as
 device proof.
+
+See `docs/plans/2026-06-21-airquality-android-system-make-boundary.md` for the
+trusted hosted and contributor Make entry point and its caller-authority limits.
 
 ## Configuration and Secrets
 

@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-21
+
+- Bound hosted and documented verification to `/usr/bin/make` and added an
+  executable authority harness covering root, shell, tool, startup-file,
+  recipe, and unsafe-mode boundaries.
+
 ## 2026-06-17
 
 - Prevented the credential-free launcher from accessing TwitterKit before

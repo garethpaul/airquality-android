@@ -46,7 +46,7 @@ LoginActivity is the only exported launcher; MainActivity is explicitly non-expo
   handles location and Twitter/Fabric app state.
 - IDE workspace metadata should stay untracked so local SDK paths, launch
   settings, and editor preferences are not committed.
-- Pinned, read-only GitHub Actions jobs run `make check` across Python 3.10,
+- Pinned, read-only GitHub Actions jobs run `/usr/bin/make check` across Python 3.10,
   3.12, and 3.14 so Android manifest, credential, location, sensor, and network
   guardrails stay enforced before merge.
 - A separate hosted Java 8/API 22 job runs the complete Android gate, and the
@@ -93,6 +93,12 @@ LoginActivity is the only exported launcher; MainActivity is explicitly non-expo
 If this project requests device permissions such as location, camera, microphone, contacts, Bluetooth, health data, or local storage access, reports should describe the permission involved and whether sensitive data can be accessed, persisted, or transmitted unexpectedly. Please avoid testing against real third-party user data or accounts you do not control.
 
 ## Dependency and Supply Chain Security
+
+Repository verification enters through system `/usr/bin/make`. The Makefile
+freezes the canonical checkout root, `/bin/sh`, and literal Python and Gradle
+selections before later makefiles can replace them, and rejects startup files
+and non-executing or error-ignoring modes. Explicit literal Python and Gradle
+paths remain supported caller authority.
 
 The generated Gradle 8.14.5 bootstrap retains the legacy Gradle 2.2.1 runtime
 required by Android Gradle Plugin 1.2.3. Review all four wrapper files together;
