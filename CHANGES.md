@@ -6,9 +6,10 @@
   executable authority harness covering root, shell, tool, startup-file,
   recipe, and unsafe-mode boundaries.
 - Corrected the startup-file boundary: the canonical Make entrypoint now clears
-  inherited Make startup and option variables before `/usr/bin/make`, while
-  direct pre-parse startup programs are documented and tested as caller
-  authority.
+  all inherited Make startup and option variables before `/usr/bin/make`,
+  accepts only fixed repository `check` and harness `lint` targets, and rejects
+  caller options, assignments, extra makefiles, and extra arguments before Make
+  starts. Direct callers who bypass the entrypoint retain pre-parse authority.
 
 ## 2026-06-17
 

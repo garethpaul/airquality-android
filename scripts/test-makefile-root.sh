@@ -1,27 +1,59 @@
 #!/bin/sh
 set -eu
 
-ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
+ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd -P)
 MAKEFILE=$ROOT/Makefile
 TEMP_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/airquality-android-make-authority.XXXXXX")
-trap 'rm -rf "$TEMP_ROOT"' EXIT HUP INT TERM
+TEST_ENTRYPOINT="$ROOT/scripts/.run-make-test.$$"
+trap 'rm -rf "$TEMP_ROOT"; rm -f "$TEST_ENTRYPOINT"' EXIT HUP INT TERM
 
 CONTROL_DIR="$TEMP_ROOT/control dir"
 mkdir -p "$CONTROL_DIR"
 LOG="$TEMP_ROOT/commands.log"
 FAKE_PYTHON="$TEMP_ROOT/python tool"
 FAKE_GRADLE="$TEMP_ROOT/gradle tool"
+AUTHORITY_FAILURES=0
 
-printf '%s\n' '#!/bin/sh' 'printf "python:%s\\n" "$*" >> "$AIRQUALITY_ANDROID_COMMAND_LOG"' > "$FAKE_PYTHON"
-printf '%s\n' '#!/bin/sh' 'printf "gradle:%s\\n" "$*" >> "$AIRQUALITY_ANDROID_COMMAND_LOG"' > "$FAKE_GRADLE"
+cat > "$FAKE_PYTHON" <<'EOF'
+#!/bin/sh
+printf 'python:%s\n' "$*" >> "$AIRQUALITY_ANDROID_COMMAND_LOG"
+EOF
+cat > "$FAKE_GRADLE" <<'EOF'
+#!/bin/sh
+printf 'gradle:%s\n' "$*" >> "$AIRQUALITY_ANDROID_COMMAND_LOG"
+EOF
 chmod +x "$FAKE_PYTHON" "$FAKE_GRADLE"
+
+make_test_entrypoint() {
+  make_command=$1
+  /usr/bin/awk -v make_command="$make_command" '
+    { sub("/usr/bin/make", make_command); print }
+  ' "$ROOT/scripts/run-make.sh" > "$TEST_ENTRYPOINT"
+  chmod +x "$TEST_ENTRYPOINT"
+}
+
+expect_entrypoint_rejection() {
+  label=$1
+  output=$2
+  marker=$3
+  shift 3
+  rm -f "$marker"
+  if (cd "$CONTROL_DIR" && /bin/sh "$TEST_ENTRYPOINT" "$@") > "$output" 2>&1; then
+    printf 'RED: canonical entrypoint accepted %s\n' "$label" >&2
+    AUTHORITY_FAILURES=$((AUTHORITY_FAILURES + 1))
+  fi
+  if [ -e "$marker" ]; then
+    printf 'RED: canonical entrypoint allowed %s to execute\n' "$label" >&2
+    AUTHORITY_FAILURES=$((AUTHORITY_FAILURES + 1))
+  fi
+}
 
 run_make() {
   (export ANDROID_HOME; cd "$CONTROL_DIR" && AIRQUALITY_ANDROID_COMMAND_LOG="$LOG" /usr/bin/make --no-print-directory -f "$MAKEFILE" "PYTHON=$FAKE_PYTHON" "GRADLE=$FAKE_GRADLE" "$@")
 }
 
 : > "$LOG"
-ANDROID_HOME= run_make lint test > "$TEMP_ROOT/check.out"
+ANDROID_HOME='' run_make lint test > "$TEMP_ROOT/check.out"
 grep -Fq "python:-m py_compile $ROOT/scripts/check_airquality_android_contracts.py" "$LOG"
 grep -Fq "python:$ROOT/scripts/check_airquality_android_contracts.py" "$LOG"
 
@@ -49,10 +81,77 @@ EOF
 test -f "$STARTUP_MARKER"
 
 rm -f "$STARTUP_MARKER"
-if ! (cd "$CONTROL_DIR" && AIRQUALITY_ANDROID_COMMAND_LOG="$LOG" MAKEFILES="$STARTUP" MAKEFLAGS=-s MFLAGS=-s MAKEOVERRIDES=hostile /bin/sh "$ROOT/scripts/run-make.sh" --no-print-directory -f "$MAKEFILE" "PYTHON=$FAKE_PYTHON" "GRADLE=$FAKE_GRADLE" lint) > "$TEMP_ROOT/sanitized-startup.out" 2>&1; then
+if ! (cd "$CONTROL_DIR" && AIRQUALITY_ANDROID_COMMAND_LOG="$LOG" PYTHON="$FAKE_PYTHON" GRADLE="$FAKE_GRADLE" MAKEFILES="$STARTUP" MAKEFLAGS=-s MFLAGS=-s MAKEOVERRIDES=hostile GNUMAKEFLAGS=-s /bin/sh "$ROOT/scripts/run-make.sh" lint) > "$TEMP_ROOT/sanitized-startup.out" 2>&1; then
   exit 1
 fi
 test ! -e "$STARTUP_MARKER"
+
+make_test_entrypoint /usr/bin/make
+
+EXTRA_MAKEFILE="$TEMP_ROOT/extra.mk"
+EXTRA_MAKEFILE_MARKER="$TEMP_ROOT/extra-makefile-executed"
+cat > "$EXTRA_MAKEFILE" <<EOF
+attack:
+	@/usr/bin/touch '$EXTRA_MAKEFILE_MARKER'
+EOF
+expect_entrypoint_rejection \
+  'an extra -f makefile' \
+  "$TEMP_ROOT/extra-makefile.out" \
+  "$EXTRA_MAKEFILE_MARKER" \
+  -f "$EXTRA_MAKEFILE" attack
+
+ASSIGNMENT_MARKER="$TEMP_ROOT/assignment-executed"
+expect_entrypoint_rejection \
+  'a Make-control variable assignment' \
+  "$TEMP_ROOT/assignment.out" \
+  "$ASSIGNMENT_MARKER" \
+  -f "$MAKEFILE" \
+  "MAKEFILES=\$(shell /usr/bin/touch '$ASSIGNMENT_MARKER')" \
+  lint
+
+GNU_MAKE=
+for candidate in /opt/homebrew/bin/gmake /usr/local/bin/gmake "$(command -v gmake 2>/dev/null || true)"; do
+  if [ -n "$candidate" ] && [ -x "$candidate" ] && "$candidate" --version 2>/dev/null | grep -Eq '^GNU Make 4\.'; then
+    GNU_MAKE=$candidate
+    break
+  fi
+done
+
+if [ -n "$GNU_MAKE" ]; then
+  make_test_entrypoint "$GNU_MAKE"
+
+  EVAL_MARKER="$TEMP_ROOT/eval-executed"
+  expect_entrypoint_rejection \
+    'GNU Make 4.x --eval' \
+    "$TEMP_ROOT/eval.out" \
+    "$EVAL_MARKER" \
+    "--eval=\$(shell /usr/bin/touch '$EVAL_MARKER')" \
+    lint
+
+  if "$GNU_MAKE" --help 2>/dev/null | grep -Fq -- '-E STRING'; then
+    SHORT_EVAL_MARKER="$TEMP_ROOT/short-eval-executed"
+    expect_entrypoint_rejection \
+      'GNU Make 4.x -E' \
+      "$TEMP_ROOT/short-eval.out" \
+      "$SHORT_EVAL_MARKER" \
+      -E \
+      "\$(shell /usr/bin/touch '$SHORT_EVAL_MARKER')" \
+      lint
+  fi
+
+  GNUMAKEFLAGS_MARKER="$TEMP_ROOT/gnumakeflags-executed"
+  rm -f "$GNUMAKEFLAGS_MARKER"
+  if ! (cd "$CONTROL_DIR" && GNUMAKEFLAGS="--eval=\$(shell /usr/bin/touch '$GNUMAKEFLAGS_MARKER')" /bin/sh "$TEST_ENTRYPOINT" lint) > "$TEMP_ROOT/gnumakeflags.out" 2>&1; then
+    printf '%s\n' 'canonical entrypoint rejected a valid target after clearing GNUMAKEFLAGS' >&2
+    AUTHORITY_FAILURES=$((AUTHORITY_FAILURES + 1))
+  fi
+  if [ -e "$GNUMAKEFLAGS_MARKER" ]; then
+    printf '%s\n' 'RED: canonical entrypoint allowed inherited GNUMAKEFLAGS=--eval to execute' >&2
+    AUTHORITY_FAILURES=$((AUTHORITY_FAILURES + 1))
+  fi
+fi
+
+test "$AUTHORITY_FAILURES" -eq 0
 
 LATER="$TEMP_ROOT/later.mk"
 printf '%s\n' 'lint:' '>@printf replaced' > "$LATER"
@@ -72,4 +171,4 @@ for flag in -n --just-print --dry-run --recon -t --touch -q --question -i --igno
   grep -Fq 'non-executing or error-ignoring MAKEFLAGS are not supported' "$TEMP_ROOT/mode.out"
 done
 
-printf '%s\n' 'Make authority tests passed: external root, SDK-free and SDK-backed tool selection, 2 raw Make-syntax controls, startup caller-authority proof, sanitized canonical entrypoint, later recipe rejection, caller MAKEFLAGS rejection, and 10 unsafe mode rejections'
+printf '%s\n' 'Make authority tests passed: external root, SDK-free and SDK-backed tool selection, 2 raw Make-syntax controls, startup caller-authority proof, sanitized canonical entrypoint, strict target-only entrypoint, GNU Make 4.x eval controls when available, later recipe rejection, caller MAKEFLAGS rejection, and 10 unsafe mode rejections'

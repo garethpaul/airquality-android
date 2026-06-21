@@ -57,9 +57,11 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 ## Testing and Verification
 
-- `/bin/sh scripts/run-make.sh check` - clear inherited Make startup controls,
-  run the Make authority harness and SDK-free static contracts, then skip
-  Gradle when no Android SDK is configured
+- `/bin/sh scripts/run-make.sh check` - clear inherited Make startup and option
+  controls, reject caller options, assignments, extra makefiles, extra
+  arguments, and unknown targets, then run the fixed repository Makefile
+- `/bin/sh scripts/run-make.sh lint` - run only the bounded static syntax target
+  used by the Make authority harness
 - `./gradlew test` or Android Studio's test runner when the SDK is configured
 - GitHub Actions enters through the same script and fixed `/usr/bin/make`, and preserves the SDK-free
   baseline on Python 3.10,

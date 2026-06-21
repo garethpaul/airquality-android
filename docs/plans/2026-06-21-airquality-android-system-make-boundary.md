@@ -14,7 +14,11 @@ Gradle replacement could also redirect or suppress the repository checks.
 
 - Bound both GitHub Actions jobs and contributor verification to
   `/bin/sh scripts/run-make.sh check`, which clears inherited `MAKEFILES`,
-  `MAKEFLAGS`, `MFLAGS`, and `MAKEOVERRIDES` before fixed `/usr/bin/make`.
+  `MAKEFLAGS`, `MFLAGS`, `MAKEOVERRIDES`, and `GNUMAKEFLAGS` before fixed
+  `/usr/bin/make --no-print-directory -f <checkout>/Makefile`.
+- Allowed only the workflow `check` target and harness-only `lint` target;
+  options, assignments, extra makefiles, extra arguments, and unknown targets
+  fail before Make starts.
 - Froze `/bin/sh`, the canonical repository root, and literal Python and Gradle
   selections across every public target.
 - Defined pre-parse startup programs as caller authority. The canonical entry
@@ -28,8 +32,7 @@ Gradle replacement could also redirect or suppress the repository checks.
 ## Verification
 
 - Run `/bin/sh scripts/run-make.sh check` from the repository root.
-- Run `/bin/sh <checkout>/scripts/run-make.sh -f <checkout>/Makefile check`
-  from an unrelated directory.
+- Run `/bin/sh <checkout>/scripts/run-make.sh check` from an unrelated directory.
 - Run `scripts/test-makefile-root.sh` without an Android SDK.
 - Let the hosted Android job exercise the same boundary with API 22 and Java 8.
 
@@ -37,6 +40,6 @@ Gradle replacement could also redirect or suppress the repository checks.
 
 This change does not alter application behavior, Android dependencies,
 permissions, credentials, backend requests, or device-data handling. Direct
-Make startup programs, explicit extra makefiles, and explicit literal Python
-and Gradle paths remain caller authority; the hosted command supplies none of
-them.
+Make startup programs, extra makefiles, option strings, and assignments remain
+caller authority only when a caller bypasses the canonical entrypoint. The
+hosted command uses the canonical entrypoint and supplies none of them.

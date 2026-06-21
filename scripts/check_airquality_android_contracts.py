@@ -73,12 +73,30 @@ jobs:
 EXPECTED_MAKE_ENTRYPOINT = """#!/bin/sh
 set -eu
 
+ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd -P)
+
+if [ "$#" -ne 1 ]; then
+  printf '%s\\n' 'usage: scripts/run-make.sh check|lint' >&2
+  exit 64
+fi
+
+case $1 in
+  check|lint)
+    target=$1
+    ;;
+  *)
+    printf 'unsupported repository verification target: %s\\n' "$1" >&2
+    exit 64
+    ;;
+esac
+
 exec /usr/bin/env \\
   -u MAKEFILES \\
   -u MAKEFLAGS \\
   -u MFLAGS \\
   -u MAKEOVERRIDES \\
-  /usr/bin/make "$@"
+  -u GNUMAKEFLAGS \\
+  /usr/bin/make --no-print-directory -f "$ROOT/Makefile" "$target"
 """
 
 EXPECTED_WRAPPER_PROPERTIES = """distributionBase=GRADLE_USER_HOME
@@ -1184,7 +1202,7 @@ def main():
     )
     require(
         make_entrypoint == EXPECTED_MAKE_ENTRYPOINT,
-        "Canonical Make entrypoint must clear inherited Make control variables before fixed /usr/bin/make",
+        "Canonical Make entrypoint must clear inherited Make control variables and accept only fixed repository targets",
         failures,
     )
     require(
@@ -1210,8 +1228,10 @@ def main():
         "10 unsafe mode rejections" in make_authority_test
         and "startup caller-authority proof" in make_authority_test
         and "sanitized canonical entrypoint" in make_authority_test
+        and "strict target-only entrypoint" in make_authority_test
+        and "GNU Make 4.x eval controls when available" in make_authority_test
         and "later recipe rejection" in make_authority_test,
-        "Make authority harness must retain startup authority, sanitized entrypoint, recipe, and unsafe-mode coverage",
+        "Make authority harness must retain startup, target-only entrypoint, GNU Make 4.x, recipe, and unsafe-mode coverage",
         failures,
     )
     require(

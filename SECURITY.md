@@ -95,13 +95,15 @@ If this project requests device permissions such as location, camera, microphone
 ## Dependency and Supply Chain Security
 
 Repository verification enters through `/bin/sh scripts/run-make.sh check`,
-which clears inherited `MAKEFILES`, `MAKEFLAGS`, `MFLAGS`, and `MAKEOVERRIDES`
-before fixed `/usr/bin/make`. GNU Make startup programs execute before the
-repository Makefile can inspect them, so direct startup programs are caller
-authority rather than repository-validated input. The Makefile freezes the
-canonical checkout root, `/bin/sh`, and literal Python and Gradle selections,
-and rejects later visible overrides and unsafe modes. Explicit extra makefiles
-and literal Python and Gradle paths remain supported caller authority.
+which accepts only `check` or the harness-only `lint` target, clears inherited
+`MAKEFILES`, `MAKEFLAGS`, `MFLAGS`, `MAKEOVERRIDES`, and `GNUMAKEFLAGS`, and
+invokes fixed `/usr/bin/make --no-print-directory -f <checkout>/Makefile`.
+Options, assignments, extra makefiles, extra arguments, and unknown targets are
+rejected before Make starts. GNU Make startup programs supplied by callers who
+bypass this entrypoint still execute before the repository Makefile can inspect
+them and remain caller authority. The Makefile freezes the canonical checkout
+root, `/bin/sh`, and literal Python and Gradle selections, and rejects later
+visible overrides and unsafe modes.
 
 The generated Gradle 8.14.5 bootstrap retains the legacy Gradle 2.2.1 runtime
 required by Android Gradle Plugin 1.2.3. Review all four wrapper files together;
