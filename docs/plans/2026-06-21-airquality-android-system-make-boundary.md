@@ -19,6 +19,10 @@ Gradle replacement could also redirect or suppress the repository checks.
 - Allowed only the workflow `check` target and harness-only `lint` target;
   options, assignments, extra makefiles, extra arguments, and unknown targets
   fail before Make starts.
+- Resolved the actual entrypoint through at most 40 relative or absolute
+  symbolic links with fixed `/usr/bin/readlink`, `/usr/bin/dirname`, and
+  `/bin/pwd`, preventing `PATH` substitution and external symlink directories
+  from selecting a different repository root.
 - Froze `/bin/sh`, the canonical repository root, and literal Python and Gradle
   selections across every public target.
 - Defined pre-parse startup programs as caller authority. The canonical entry
@@ -33,6 +37,8 @@ Gradle replacement could also redirect or suppress the repository checks.
 
 - Run `/bin/sh scripts/run-make.sh check` from the repository root.
 - Run `/bin/sh <checkout>/scripts/run-make.sh check` from an unrelated directory.
+- Run the entrypoint with a hostile `dirname` earlier on `PATH` and through an
+  external symbolic link; both must still select the physical checkout.
 - Run `scripts/test-makefile-root.sh` without an Android SDK.
 - Let the hosted Android job exercise the same boundary with API 22 and Java 8.
 

@@ -62,7 +62,7 @@ Priority:
   session manager, and expose the unavailable login configuration to users
 - Keep IDE workspace metadata out of the shared Android project baseline
 - Keep GitHub Actions aligned with the SDK-free Python sanitized, target-only,
-  fixed-system-Make baseline
+  physical-root, fixed-system-Make baseline
 - Keep the legacy Gradle runtime behind a checksum-verified generated wrapper
 - Keep a separate hosted Java 8/API 22 job for complete Android verification
 - Keep exact-commit emulator and physical-device evidence separate from static

@@ -86,6 +86,45 @@ if ! (cd "$CONTROL_DIR" && AIRQUALITY_ANDROID_COMMAND_LOG="$LOG" PYTHON="$FAKE_P
 fi
 test ! -e "$STARTUP_MARKER"
 
+PATH_REDIRECT_ROOT="$TEMP_ROOT/path-redirect"
+PATH_REDIRECT_BIN="$TEMP_ROOT/path-bin"
+PATH_REDIRECT_MARKER="$TEMP_ROOT/path-redirect-executed"
+mkdir -p "$PATH_REDIRECT_ROOT/scripts" "$PATH_REDIRECT_BIN"
+cat > "$PATH_REDIRECT_ROOT/Makefile" <<EOF
+lint:
+	@/usr/bin/touch '$PATH_REDIRECT_MARKER'
+EOF
+cat > "$PATH_REDIRECT_BIN/dirname" <<'EOF'
+#!/bin/sh
+printf '%s\n' "$AIRQUALITY_ANDROID_PATH_REDIRECT_ROOT/scripts"
+EOF
+chmod +x "$PATH_REDIRECT_BIN/dirname"
+if ! (cd "$CONTROL_DIR" && AIRQUALITY_ANDROID_PATH_REDIRECT_ROOT="$PATH_REDIRECT_ROOT" PATH="$PATH_REDIRECT_BIN:$PATH" /bin/sh "$ROOT/scripts/run-make.sh" lint) > "$TEMP_ROOT/path-redirect.out" 2>&1; then
+  printf '%s\n' 'canonical entrypoint failed with an untrusted PATH' >&2
+  AUTHORITY_FAILURES=$((AUTHORITY_FAILURES + 1))
+fi
+if [ -e "$PATH_REDIRECT_MARKER" ]; then
+  printf '%s\n' 'RED: PATH-substituted dirname redirected the repository root' >&2
+  AUTHORITY_FAILURES=$((AUTHORITY_FAILURES + 1))
+fi
+
+SYMLINK_ROOT="$TEMP_ROOT/symlink-checkout"
+SYMLINK_MARKER="$TEMP_ROOT/symlink-root-executed"
+mkdir -p "$SYMLINK_ROOT/scripts"
+cat > "$SYMLINK_ROOT/Makefile" <<EOF
+lint:
+	@/usr/bin/touch '$SYMLINK_MARKER'
+EOF
+ln -s "$ROOT/scripts/run-make.sh" "$SYMLINK_ROOT/scripts/run-make.sh"
+if ! (cd "$CONTROL_DIR" && /bin/sh "$SYMLINK_ROOT/scripts/run-make.sh" lint) > "$TEMP_ROOT/symlink-root.out" 2>&1; then
+  printf '%s\n' 'canonical entrypoint failed through an external symlink' >&2
+  AUTHORITY_FAILURES=$((AUTHORITY_FAILURES + 1))
+fi
+if [ -e "$SYMLINK_MARKER" ]; then
+  printf '%s\n' 'RED: external symlink invocation selected the symlink directory' >&2
+  AUTHORITY_FAILURES=$((AUTHORITY_FAILURES + 1))
+fi
+
 make_test_entrypoint /usr/bin/make
 
 EXTRA_MAKEFILE="$TEMP_ROOT/extra.mk"
@@ -171,4 +210,4 @@ for flag in -n --just-print --dry-run --recon -t --touch -q --question -i --igno
   grep -Fq 'non-executing or error-ignoring MAKEFLAGS are not supported' "$TEMP_ROOT/mode.out"
 done
 
-printf '%s\n' 'Make authority tests passed: external root, SDK-free and SDK-backed tool selection, 2 raw Make-syntax controls, startup caller-authority proof, sanitized canonical entrypoint, strict target-only entrypoint, GNU Make 4.x eval controls when available, later recipe rejection, caller MAKEFLAGS rejection, and 10 unsafe mode rejections'
+printf '%s\n' 'Make authority tests passed: external root, SDK-free and SDK-backed tool selection, 2 raw Make-syntax controls, startup caller-authority proof, sanitized canonical entrypoint, PATH and symlink root resistance, strict target-only entrypoint, GNU Make 4.x eval controls when available, later recipe rejection, caller MAKEFLAGS rejection, and 10 unsafe mode rejections'

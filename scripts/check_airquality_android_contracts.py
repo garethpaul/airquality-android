@@ -73,7 +73,28 @@ jobs:
 EXPECTED_MAKE_ENTRYPOINT = """#!/bin/sh
 set -eu
 
-ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd -P)
+case $0 in
+  /*) script_path=$0 ;;
+  *) script_path=$(/bin/pwd -P)/$0 ;;
+esac
+
+link_count=0
+while [ -L "$script_path" ]; do
+  link_count=$((link_count + 1))
+  if [ "$link_count" -gt 40 ]; then
+    printf '%s\\n' 'repository verification entrypoint has too many symbolic links' >&2
+    exit 66
+  fi
+
+  link_target=$(/usr/bin/readlink "$script_path")
+  case $link_target in
+    /*) script_path=$link_target ;;
+    *) script_path=$(/usr/bin/dirname "$script_path")/$link_target ;;
+  esac
+done
+
+script_dir=$(CDPATH='' cd -P "$(/usr/bin/dirname "$script_path")" && /bin/pwd -P)
+ROOT=$(CDPATH='' cd -P "$script_dir/.." && /bin/pwd -P)
 
 if [ "$#" -ne 1 ]; then
   printf '%s\\n' 'usage: scripts/run-make.sh check|lint' >&2
@@ -1228,10 +1249,11 @@ def main():
         "10 unsafe mode rejections" in make_authority_test
         and "startup caller-authority proof" in make_authority_test
         and "sanitized canonical entrypoint" in make_authority_test
+        and "PATH and symlink root resistance" in make_authority_test
         and "strict target-only entrypoint" in make_authority_test
         and "GNU Make 4.x eval controls when available" in make_authority_test
         and "later recipe rejection" in make_authority_test,
-        "Make authority harness must retain startup, target-only entrypoint, GNU Make 4.x, recipe, and unsafe-mode coverage",
+        "Make authority harness must retain startup, root-resolution, target-only entrypoint, GNU Make 4.x, recipe, and unsafe-mode coverage",
         failures,
     )
     require(
