@@ -1,5 +1,13 @@
 # Changes
 
+## 2026-06-25
+
+- Reverified the hardened maintenance baseline across Make authority, Android
+  lifecycle and location ownership, bounded JSON transport parsing, strict
+  response metadata, privacy-safe logging, and credential-free startup.
+- Confirmed the SDK-free contract suite locally and retained hosted Android
+  lint, unit-test, and debug-build coverage for the legacy Gradle runtime.
+
 ## 2026-06-21
 
 - Bound hosted and documented verification to `/usr/bin/make` and added an
