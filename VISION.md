@@ -27,24 +27,59 @@ Priority:
 - Keep backend request timeouts wired into the HTTP client that actually executes
   the request
 - Bound backend response bytes and reject non-2xx responses before JSON parsing
+- Strict backend Content-Length validation before response body access
+- Reject automatic backend redirects away from the fixed HTTPS endpoint
+- Require JSON application media types before reading backend response bodies
+- Backend responses must contain exactly one Content-Type header before body access.
+- Response Content-Type parsing accepts only space and tab as optional HTTP whitespace; CR, LF, and other controls fail before body access.
+- Response charset metadata must be absent or unambiguous UTF-8 before body
+  decoding
+- Quoted Content-Type parameter values may contain commas while unquoted or
+  combined comma values remain invalid
+- Reject malformed UTF-8 backend responses before JSON parsing
+- Backend response reads fail when a stream reports zero progress instead of spinning indefinitely.
+- Cancel activity-owned backend requests during teardown and ignore stale
+  completion callbacks
+- Keep location-gated backend requests from using default coordinates and stop
+  location updates once a usable position is acquired
+- Send validated locations as canonical decimal coordinates across the backend request boundary; signed-zero coordinates normalize to `0.0`
+- Invalidate in-flight backend work while paused and restart only interrupted
+  requests from the retained location on resume
+- Preserve failed-request retry intent across pause and retry once on resume
+  without an automatic retry loop
 - Keep location service availability checked before provider state reads
 - Keep malformed or missing air-quality responses from crashing sensor-driven
   rendering
+- MainActivity accepts air_quality only when its JSON value is a nonblank string.
+- MainActivity trims surrounding whitespace from nonblank air_quality strings.
 - Keep accelerometer registration guarded for devices or layouts without an
   available sensor service
 - Keep sensor events and display views guarded before accelerometer rendering
-- Keep Twitter login activity-result handling guarded when a session already
-  exists
+- Keep Twitter login activity-result handling guarded when TwitterKit is
+  unconfigured or the login button is absent
 - Keep Twitter login callback setup guarded when layouts are stale
+- Keep the credential-free launcher from accessing an uninitialized TwitterKit
+  session manager, and expose the unavailable login configuration to users
 - Keep IDE workspace metadata out of the shared Android project baseline
-- Keep GitHub Actions aligned with the SDK-free Python `make check` baseline
+- Keep GitHub Actions aligned with the SDK-free Python sanitized, target-only,
+  physical-root, fixed-system-Make baseline
+- Keep the legacy Gradle runtime behind a checksum-verified generated wrapper
+- Keep a separate hosted Java 8/API 22 job for complete Android verification
+- Keep exact-commit emulator and physical-device evidence separate from static
+  contracts, with unexecuted lifecycle and permission scenarios recorded
 
 Next priorities:
 
-- Migrate Gradle, the Android Gradle Plugin, and SDK levels in a dedicated pass
+- Evaluate Gradle runtime, Android plugin, and SDK modernization together in a
+  dedicated compatibility pass; wrapper hardening is separate
 - Replace deprecated Fabric/Twitter login dependencies with maintained options
+- TwitterKit's Retrofit transport intentionally receives pinned direct OkHttp,
+  URLConnection adapter, and Okio dependencies; do not remove them without
+  authenticated runtime migration evidence.
 - Move synchronous networking and Apache HTTP usage to modern Android APIs
 - Add tests around URL construction, location handling, and failure states
+- Execute the device verification matrix on an authorized emulator and
+  physical device with sanitized evidence
 
 Contribution rules:
 
@@ -59,6 +94,8 @@ Contribution rules:
   verification gates.
 
 ## Security And Privacy
+
+LoginActivity is the only exported launcher; MainActivity is explicitly non-exported and reached with an explicit in-app intent.
 
 Canonical security policy and reporting:
 

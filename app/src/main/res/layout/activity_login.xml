@@ -6,4 +6,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"/>
+    <TextView
+        android:id="@+id/twitter_unavailable_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/twitter_login_button"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:text="@string/twitter_login_unavailable"
+        android:visibility="gone" />
 </RelativeLayout>

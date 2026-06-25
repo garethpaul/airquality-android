@@ -38,6 +38,12 @@ Additional scan context:
 
 ### Setup
 
+The generated wrapper still executes Gradle 2.2.1 for compatibility. It uses
+`distributionSha256Sum` to authenticate the downloaded distribution, while the
+SDK-free contracts verify the checked-in wrapper JAR and launchers. This does
+not make an uncached build offline-reproducible; the first build still needs
+Gradle's HTTPS distribution service.
+
 ```bash
 git clone https://github.com/garethpaul/airquality-android.git
 cd airquality-android
@@ -51,28 +57,77 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 ## Testing and Verification
 
-- `make check` - run SDK-free static contracts and skip Gradle when no Android SDK is configured
+- `/bin/sh scripts/run-make.sh check` - clear inherited Make startup and option
+  controls, resolve the physical script path byte-safely with fixed system
+  tools, reject caller options, assignments, extra makefiles, extra arguments,
+  and unknown targets, then run the fixed repository Makefile
+- `/bin/sh scripts/run-make.sh lint` - run only the bounded static syntax target
+  used by the Make authority harness
 - `./gradlew test` or Android Studio's test runner when the SDK is configured
-- GitHub Actions runs the SDK-free `make check` baseline on Python 3.10, 3.12,
-  and 3.14 on fixed Ubuntu 24.04 runners for pushes, pull requests, and manual
-  maintenance runs. Superseded branch runs are cancelled. The workflow remains
-  separate from the legacy Gradle/Fabric toolchain migration.
+- GitHub Actions enters through the same script and fixed `/usr/bin/make`, and preserves the SDK-free
+  baseline on Python 3.10,
+  3.12, and 3.14 and runs a separate Java 8/API 22 Android gate on fixed Ubuntu
+  24.04 runners. Superseded branch runs are cancelled.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
+
+Use [`DEVICE_VERIFICATION.md`](DEVICE_VERIFICATION.md) for the emulator or
+physical-device matrix. It requires exact-commit toolchain evidence for launch,
+permissions, location, lifecycle, backend failures, and log redaction, and it
+keeps unexecuted scenarios explicit rather than treating static checks as
+device proof.
+
+See `docs/plans/2026-06-21-airquality-android-system-make-boundary.md` for the
+trusted hosted and contributor Make entry point and its caller-authority limits.
 
 ## Configuration and Secrets
 
 - Detected references to Twitter. Keep API keys, OAuth credentials, tokens, and account-specific values in local configuration only.
 - `AirQualityApplication` skips Fabric/Twitter initialization while checked-in
-  credential placeholders are blank.
-- `NetworkRequest.buildUrl` trims, validates, and URL-encodes latitude and longitude before constructing the backend request.
+  credential placeholders are blank, and `LoginActivity` stops before Twitter
+  session access or login activity-result forwarding while displaying the
+  unavailable configuration state.
+- TwitterKit's Retrofit transport intentionally receives pinned direct OkHttp,
+  URLConnection adapter, and Okio dependencies; do not remove them without
+  authenticated runtime migration evidence.
+- `NetworkRequest.buildUrl` trims and validates latitude and longitude, then
+  sends canonical decimal coordinate values through URL encoding so Java-only
+  numeric syntax cannot cross the backend boundary; signed-zero coordinates normalize to `0.0`.
 - `NetworkRequest.buildUrlFromParams` validates the `AsyncTask` parameter array before the background request path creates an HTTP request.
 - `NetworkRequest` applies bounded connection and socket timeouts to the HTTP client used for the backend request.
-- `NetworkRequest` accepts only 2xx responses, reads at most 1 MiB, and closes
+- `NetworkRequest` rejects automatic redirects so the fixed HTTPS backend is
+  the only transport target.
+- `NetworkRequest` requires JSON response media types, accepting parameterized
+  `application/json` and structured `application/*+json` values while rejecting
+  missing, ambiguous, malformed, or non-JSON types before body access.
+- Backend responses must contain exactly one Content-Type header before body access.
+- Response Content-Type parsing accepts only space and tab as optional HTTP whitespace; CR, LF, and other controls fail before body access.
+- Response charset metadata must be absent or unambiguous UTF-8 so declared
+  metadata agrees with the strict decoder used before JSON parsing.
+- Quoted Content-Type parameter values may contain commas; unquoted or combined
+  comma values remain invalid.
+- `NetworkRequest` accepts only 2xx responses and rejects malformed UTF-8 after
+  validating strict Content-Length syntax and reading at most 1 MiB; it closes
   response and connection resources before JSON handling.
+- Backend response reads fail when a stream reports zero progress instead of spinning indefinitely.
+- Generic NetworkRequest failure logs preserve protocol, JSON, and parameter
+  categories without recording throwable stack traces, coordinate-bearing
+  request URLs, or provider exception details.
 - `MainActivity` treats missing or malformed `air_quality` JSON as an explicit unknown state before accelerometer rendering.
+- MainActivity accepts air_quality only when its JSON value is a nonblank string.
+- MainActivity trims surrounding whitespace from nonblank air_quality strings.
+- Android JVM tests use pinned `org.json:json:20260522` semantics instead of
+  Android SDK not-mocked stubs; production continues using platform JSON.
+- `MainActivity` owns its active air-quality request, ignores stale callbacks,
+  and cancels the task when the activity is destroyed.
+- Failed air-quality requests retain one resume-time retry from the accepted
+  location; pause preserves that intent and successful responses clear it.
+- `MainActivity` waits for a non-null location before starting the backend
+  request and stops location updates after success, on pause, and on teardown.
 - `MainActivity` checks that the location service is available before reading
   GPS or network provider state.
+- Generic location acquisition failure logs preserve the stable failure
+  category without recording provider, permission, or throwable details.
 - `MainActivity` registers accelerometer updates only after confirming the sensor
   manager and accelerometer are available.
 - `MainActivity` ignores malformed sensor events and missing display views
@@ -85,6 +140,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   workspace files do not become part of the shared AirQuality baseline.
 
 ## Security and Privacy Notes
+
+LoginActivity is the only exported launcher; MainActivity is explicitly non-exported and reached with an explicit in-app intent.
 
 - Review changes touching authentication or token handling; examples from the scan include app/src/main/java/twitterdev/airquality/LoginActivity.java, docs/plans/2026-06-08-android-build-reproducibility.md.
 - Review changes touching external API calls or credential-adjacent configuration; examples from the scan include app/build.gradle, app/src/main/AndroidManifest.xml, app/src/main/java/twitterdev/airquality/AirQualityApplication.java, app/src/main/java/twitterdev/airquality/LoginActivity.java, and 4 more.
@@ -122,6 +179,18 @@ When the required SDK or runtime is unavailable, use static checks and source re
   baseline.
 - See `docs/plans/2026-06-10-network-response-size-limit.md` for bounded backend
   response handling and root-independent verification.
+- See `docs/plans/2026-06-12-main-activity-request-lifecycle.md` for request
+  cancellation and stale-callback handling.
+- See `docs/plans/2026-06-13-network-request-log-redaction.md` for generic
+  NetworkRequest failure logs and location-detail redaction.
+- See `docs/plans/2026-06-13-location-gated-air-quality-request.md` for the
+  location-gated request and listener cleanup contract.
+- See `docs/plans/2026-06-13-paused-air-quality-request-invalidation.md` for
+  background request invalidation and interrupted-request resume behavior.
+- See `docs/plans/2026-06-13-failed-air-quality-request-resume-retry.md` for
+  failed-request retry preservation across pause and resume.
+- See `docs/plans/2026-06-14-device-verification-checklist.md` for the
+  device-evidence matrix and its explicit unexecuted boundary.
 
 ## Contributing
 

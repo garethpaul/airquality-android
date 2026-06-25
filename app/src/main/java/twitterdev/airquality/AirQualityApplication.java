@@ -20,7 +20,7 @@ public class AirQualityApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        if (!hasTwitterCredentials()) {
+        if (!isTwitterKitConfigured()) {
             Log.w(TAG, "Twitter credentials unavailable; skipping Fabric initialization");
             return;
         }
@@ -29,7 +29,7 @@ public class AirQualityApplication extends Application {
         Fabric.with(this, new Twitter(authConfig));
     }
 
-    private boolean hasTwitterCredentials() {
+    static boolean isTwitterKitConfigured() {
         return TWITTER_KEY.trim().length() > 0 && TWITTER_SECRET.trim().length() > 0;
     }
 

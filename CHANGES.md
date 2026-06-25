@@ -1,5 +1,107 @@
 # Changes
 
+## 2026-06-25
+
+- Reverified the hardened maintenance baseline across Make authority, Android
+  lifecycle and location ownership, bounded JSON transport parsing, strict
+  response metadata, privacy-safe logging, and credential-free startup.
+- Confirmed the SDK-free contract suite locally and retained hosted Android
+  lint, unit-test, and debug-build coverage for the legacy Gradle runtime.
+
+## 2026-06-21
+
+- Bound hosted and documented verification to `/usr/bin/make` and added an
+  executable authority harness covering root, shell, tool, startup-file,
+  recipe, and unsafe-mode boundaries.
+- Corrected the startup-file boundary: the canonical Make entrypoint now clears
+  all inherited Make startup and option variables before `/usr/bin/make`,
+  accepts only fixed repository `check` and harness `lint` targets, and rejects
+  caller options, assignments, extra makefiles, and extra arguments before Make
+  starts. Direct callers who bypass the entrypoint retain pre-parse authority.
+- Resolved the physical verification script through a bounded symbolic-link
+  loop and absolute system tools so hostile `PATH` entries or external symlink
+  locations cannot redirect the selected checkout root. Symbolic-link targets
+  are captured without stripping trailing newline bytes, and broken or
+  overlong chains fail closed.
+
+## 2026-06-17
+
+- Prevented the credential-free launcher from accessing TwitterKit before
+  Fabric initialization, including activity-result forwarding, and added an
+  explicit unavailable login state.
+- Documented and enforced the pinned direct OkHttp, URLConnection adapter, and
+  Okio compatibility set that Retrofit 1.6 auto-detects for TwitterKit.
+- TwitterKit's Retrofit transport intentionally receives pinned direct OkHttp,
+  URLConnection adapter, and Okio dependencies; do not remove them without
+  authenticated runtime migration evidence.
+
+## 2026-06-16
+
+1. Signed-zero coordinates now normalize to `0.0` before backend URL encoding.
+1. LoginActivity is the only exported launcher; MainActivity is explicitly non-exported and reached with an explicit in-app intent.
+1. Backend response reads fail when a stream reports zero progress instead of spinning indefinitely.
+
+## 2026-06-15
+
+1. Pinned a Java 8-compatible test-only JSON implementation so Android JVM
+   state-validation tests execute real `JSONObject` behavior.
+1. MainActivity accepts air_quality only when its JSON value is a nonblank string.
+1. MainActivity trims surrounding whitespace from nonblank air_quality strings.
+1. Quoted Content-Type parameter values may contain commas while unquoted or
+   combined comma values remain invalid.
+1. Backend responses must contain exactly one Content-Type header before body access.
+1. Response Content-Type parsing accepts only space and tab as optional HTTP whitespace; CR, LF, and other controls fail before body access.
+1. Response charset metadata must be absent or unambiguous UTF-8 before the
+   backend body is read and strictly decoded.
+
+## 2026-06-14
+
+1. Rejected malformed UTF-8 backend responses after enforcing the existing
+   response byte limit and before JSON parsing.
+2. Added focused Java and portable contracts for strict UTF-8 decoding.
+3. Disabled automatic backend redirects so the fixed HTTPS endpoint remains the
+   only request target before response status validation.
+4. Required JSON application media types before response length checks, body
+   access, strict UTF-8 decoding, and JSON parsing.
+5. Canonicalized validated coordinates before URL encoding so Java-only numeric
+   syntax is not forwarded to the backend parser.
+6. Added an exact-commit Android device verification matrix for permissions,
+   location, lifecycle, backend failures, and privacy-safe evidence while
+   retaining explicit `not run` results.
+7. Validated strict backend Content-Length syntax, duplicate fields, and numeric
+   overflow before opening response bodies.
+
+## 2026-06-13
+
+1. Replaced throwable-bearing warnings with generic NetworkRequest failure logs
+   for protocol, I/O, JSON, and invalid-parameter paths.
+2. Strengthened SDK-free contracts and documentation against stack-trace,
+   exception-message, coordinate, and provider-detail logging regressions.
+3. Removed the caught platform exception from `MainActivity` location failure
+   logs while retaining the stable failure category and fallback behavior.
+4. Added portable contracts and privacy guidance for the location log boundary.
+5. Made backend air-quality requests location-gated, including last-known and
+   callback acquisition paths, and stopped location updates across success and
+   activity lifecycle cleanup.
+6. Added mutation-sensitive SDK-free contracts for request ordering and
+   location-listener cleanup.
+7. Invalidated and cancelled in-flight air-quality requests on pause, ignored
+   late callbacks through the existing identity guard, and resumed only work
+   interrupted by pause from the retained location.
+8. Preserved failed air-quality request retry intent across pause and reused
+   the accepted location for one retry on the next resume without an automatic
+   retry loop.
+
+## 2026-06-12
+
+1. Regenerated the Gradle wrapper bootstrap with official Gradle 8.14.5
+   tooling while retaining the Gradle 2.2.1 Android runtime.
+2. Pinned Gradle's official distribution checksum, added exact wrapper
+   contracts, and added a separate hosted Java 8/API 22 Android gate.
+3. Retained the active `NetworkRequest`, ignored stale or teardown-time
+   callbacks, and cancelled the task when `MainActivity` is destroyed.
+4. Added SDK-free lifecycle contracts and a completed implementation plan.
+
 ## 2026-06-10
 
 1. Added a pinned, read-only GitHub Actions workflow that runs the SDK-free
@@ -40,8 +142,9 @@
 1. Guarded the Twitter login button lookup before setting login callbacks.
 2. Added static checker coverage for login button callback setup.
 
-1. Guarded `LoginActivity.onActivityResult` so already-authenticated sessions
-   do not dereference an uninitialized Twitter login button.
+1. Guarded `LoginActivity.onActivityResult` so credential-free and
+   already-authenticated sessions do not dereference an uninitialized Twitter
+   login button.
 2. Added static checker coverage for the login button lifecycle guard.
 
 1. Wired the existing connection and socket timeout settings into the actual

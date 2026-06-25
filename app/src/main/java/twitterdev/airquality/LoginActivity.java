@@ -7,6 +7,8 @@ import android.os.Bundle;
 import com.twitter.sdk.android.Twitter;
 import android.content.Intent;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.twitter.sdk.android.core.Callback;
@@ -25,9 +27,23 @@ public class LoginActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        loginButton = (TwitterLoginButton) findViewById(R.id.twitter_login_button);
+        TextView unavailableMessage =
+                (TextView) findViewById(R.id.twitter_unavailable_message);
+        if (!AirQualityApplication.isTwitterKitConfigured()) {
+            if (loginButton != null) {
+                loginButton.setEnabled(false);
+            }
+            if (unavailableMessage != null) {
+                unavailableMessage.setVisibility(View.VISIBLE);
+            } else {
+                Log.w("Login", "Twitter unavailable message view not found");
+            }
+            return;
+        }
+
         TwitterSession currentSession = Twitter.getSessionManager().getActiveSession();
         if (currentSession == null) {
-            loginButton = (TwitterLoginButton) findViewById(R.id.twitter_login_button);
             if (loginButton != null) {
                 loginButton.setCallback(new Callback<TwitterSession>() {
                     @Override
@@ -64,6 +80,9 @@ public class LoginActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (!AirQualityApplication.isTwitterKitConfigured()) {
+            return;
+        }
         if (loginButton != null) {
             loginButton.onActivityResult(requestCode, resultCode, data);
         }

@@ -71,18 +71,31 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     private String state = DEFAULT_AIR_QUALITY_STATE;
     private ImageView logo;
     private TextView text;
+    private NetworkRequest airQualityRequest;
+    private boolean locationUpdatesActive;
+    private boolean restartAirQualityRequestOnResume;
 
     @Override
     protected void onResume() {
         super.onResume();
         registerAccelerometerListener();
+        if (airQualityRequest == null
+                && (location == null || restartAirQualityRequestOnResume)) {
+            restartAirQualityRequestOnResume = false;
+            locationUpdatesActive = true;
+            requestAirQualityForLocation(location != null ? location : getLocation());
+        }
     }
 
     @Override
     protected void onPause() {
-        // unregister listener
-        super.onPause();
+        restartAirQualityRequestOnResume = restartAirQualityRequestOnResume
+                || airQualityRequest != null;
+        locationUpdatesActive = false;
+        stopLocationUpdates();
+        cancelAirQualityRequest();
         unregisterAccelerometerListener();
+        super.onPause();
     }
 
     @Override
@@ -90,7 +103,6 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context = this;
-        getLocation();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
@@ -99,14 +111,65 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
 
         logo = (ImageView) findViewById(R.id.imageView);
         text = (TextView) findViewById(R.id.textView);
+    }
 
-        NetworkRequest request = new NetworkRequest() {
+    private void requestAirQualityForLocation(Location currentLocation) {
+        if (currentLocation == null || !locationUpdatesActive) {
+            return;
+        }
+
+        location = currentLocation;
+        latitude = currentLocation.getLatitude();
+        longitude = currentLocation.getLongitude();
+        locationUpdatesActive = false;
+        stopLocationUpdates();
+
+        cancelAirQualityRequest();
+
+        airQualityRequest = new NetworkRequest() {
             @Override
             protected void onPostExecute(JSONObject response) {
+                if (airQualityRequest != this) {
+                    return;
+                }
+                airQualityRequest = null;
+                if (isCancelled() || isFinishing() || isDestroyed()) {
+                    return;
+                }
+                restartAirQualityRequestOnResume = response == null;
                 state = readAirQualityState(response);
             }
         };
-        request.execute(String.valueOf(latitude), String.valueOf(longitude));
+        airQualityRequest.execute(String.valueOf(latitude), String.valueOf(longitude));
+    }
+
+    private void stopLocationUpdates() {
+        if (locationManager == null) {
+            return;
+        }
+
+        try {
+            locationManager.removeUpdates(this);
+        } catch (SecurityException e) {
+            Log.w(TAG, "Unable to stop location updates");
+        }
+    }
+
+    private void cancelAirQualityRequest() {
+        NetworkRequest request = airQualityRequest;
+        airQualityRequest = null;
+        if (request != null) {
+            request.cancel(true);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        restartAirQualityRequestOnResume = false;
+        locationUpdatesActive = false;
+        stopLocationUpdates();
+        cancelAirQualityRequest();
+        super.onDestroy();
     }
 
     private void registerAccelerometerListener() {
@@ -135,8 +198,13 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
             return DEFAULT_AIR_QUALITY_STATE;
         }
 
-        String airQuality = response.optString("air_quality", DEFAULT_AIR_QUALITY_STATE);
-        if (airQuality.trim().length() == 0) {
+        Object rawAirQuality = response.opt("air_quality");
+        if (!(rawAirQuality instanceof String)) {
+            return DEFAULT_AIR_QUALITY_STATE;
+        }
+
+        String airQuality = ((String) rawAirQuality).trim();
+        if (airQuality.length() == 0) {
             return DEFAULT_AIR_QUALITY_STATE;
         }
 
@@ -204,12 +272,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                     if (locationManager != null) {
                         location = locationManager
                                 .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                        if (location != null) {
-
-                            latitude = location.getLatitude();
-                            longitude = location.getLongitude();
-
-                        } else {
+                        if (location == null) {
                             Log.d("Network", "not null");
                         }
                     }
@@ -225,17 +288,13 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                         if (locationManager != null) {
                             location = locationManager
                                     .getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                            if (location != null) {
-                                latitude = location.getLatitude();
-                                longitude = location.getLongitude();
-                            }
                         }
                     }
                 }
             }
 
         } catch (Exception e) {
-            Log.w(TAG, "Unable to read device location", e);
+            Log.w(TAG, "Unable to read device location");
         }
 
         return location;
@@ -267,8 +326,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
 
     @Override
     public void onLocationChanged(Location location) {
-
-
+        requestAirQualityForLocation(location);
     }
 
     @Override
