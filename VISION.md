@@ -42,6 +42,8 @@ Priority:
   completion callbacks
 - Keep location-gated backend requests from using default coordinates and stop
   location updates once a usable position is acquired
+- Keep GPS and network listener registration on the declared ten-second minimum
+  update interval rather than provider-specific millisecond literals
 - Send validated locations as canonical decimal coordinates across the backend request boundary; signed-zero coordinates normalize to `0.0`
 - Invalidate in-flight backend work while paused and restart only interrupted
   requests from the retained location on resume

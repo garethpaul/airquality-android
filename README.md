@@ -124,6 +124,8 @@ trusted hosted and contributor Make entry point and its caller-authority limits.
   location; pause preserves that intent and successful responses clear it.
 - `MainActivity` waits for a non-null location before starting the backend
   request and stops location updates after success, on pause, and on teardown.
+- GPS and network location listeners both use the declared ten-second minimum
+  update interval instead of near-continuous millisecond polling.
 - `MainActivity` checks that the location service is available before reading
   GPS or network provider state.
 - Generic location acquisition failure logs preserve the stable failure
@@ -189,6 +191,8 @@ LoginActivity is the only exported launcher; MainActivity is explicitly non-expo
   background request invalidation and interrupted-request resume behavior.
 - See `docs/plans/2026-06-13-failed-air-quality-request-resume-retry.md` for
   failed-request retry preservation across pause and resume.
+- See `docs/plans/2026-06-25-location-update-interval.md` for the provider
+  polling interval correction and portable regression contract.
 - See `docs/plans/2026-06-14-device-verification-checklist.md` for the
   device-evidence matrix and its explicit unexecuted boundary.
 

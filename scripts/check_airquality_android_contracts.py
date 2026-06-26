@@ -539,6 +539,7 @@ def main():
     location_changed_method = java_method(
         main_activity, "public void onLocationChanged(Location location)"
     )
+    get_location_method = java_method(main_activity, "public Location getLocation()")
     require(
         "getLocation();" not in create_method
         and "new NetworkRequest()" not in create_method
@@ -564,6 +565,13 @@ def main():
         and "stopLocationUpdates();" in location_request_method
         and "airQualityRequest.execute(" in location_request_method,
         "MainActivity must gate requests on an active non-null location and record its coordinates",
+        failures,
+    )
+    require(
+        "private static final long MIN_TIME_BETWEEN_UPDATES = 1000 * 10 * 1;"
+        in main_activity
+        and get_location_method.count("MIN_TIME_BETWEEN_UPDATES,") == 2,
+        "MainActivity must use its ten-second minimum interval for both location providers",
         failures,
     )
     require(

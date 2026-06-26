@@ -1,5 +1,58 @@
 # Changes
 
+## 2026-06-25 23:24 - P2 - Honor the declared location update interval
+
+### Summary
+
+Corrected GPS and network listener registration to use the existing ten-second
+minimum interval instead of 3 ms and 10 ms literals that could request
+near-continuous callbacks while waiting for a usable location.
+
+### Work completed
+
+- Added a portable contract requiring both providers to use
+  `MIN_TIME_BETWEEN_UPDATES`.
+- Reused the declared interval without changing provider selection, distance
+  threshold, lifecycle cleanup, or backend request behavior.
+- Documented the correction and its device-evidence boundary.
+
+### Threads
+
+- Started: location update interval correction — direct implementation.
+- Continued: continuous open-source maintenance loop.
+- Stopped: none.
+
+### Files changed
+
+- `app/src/main/java/twitterdev/airquality/MainActivity.java` — shared provider
+  interval.
+- `scripts/check_airquality_android_contracts.py` — regression contract.
+- `README.md`, `VISION.md` — maintained behavior and priority record.
+- `docs/plans/2026-06-25-location-update-interval.md` — completed plan.
+- `CHANGES.md` — this cycle record.
+
+### Validation
+
+- Red contract — failed on the original network and GPS interval literals.
+- `/bin/sh scripts/run-make.sh check` — Make authority and SDK-free contracts
+  passed; local Gradle execution skipped because no Android SDK is configured.
+- Independent network and GPS interval mutations — both rejected.
+- `git diff --check` — passed.
+
+### Bugs / findings
+
+- P2: `MIN_TIME_BETWEEN_UPDATES` declared ten seconds, but the two active
+  registrations bypassed it with 10 ms and 3 ms values.
+
+### Blockers
+
+- None. Hosted Android verification remains the required exact-head gate.
+
+### Next action
+
+- Open a focused pull request and require hosted Android and CodeQL checks
+  before exact-head review and merge.
+
 ## 2026-06-25
 
 - Reverified the hardened maintenance baseline across Make authority, Android
