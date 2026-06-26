@@ -1,5 +1,14 @@
 # Changes
 
+## 2026-06-26 - P1 - Reject trailing backend JSON content
+
+- Replaced direct `JSONObject(String)` construction with a `JSONTokener` parser
+  that requires one object followed only by ignorable whitespace.
+- Rejected trailing JSON values, comments, and arbitrary garbage before the air
+  quality response can update activity state.
+- Added Android unit and portable source contracts for valid whitespace,
+  non-object roots, and trailing content.
+
 ## 2026-06-25 23:24 - P2 - Honor the declared location update interval
 
 ### Summary

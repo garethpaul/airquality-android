@@ -1,6 +1,7 @@
 package twitterdev.airquality;
 
 import org.junit.Test;
+import org.json.JSONException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -11,6 +12,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 public class NetworkRequestTest {
+
+    @Test
+    public void parseJsonObjectRejectsTrailingValuesAndGarbage() throws Exception {
+        assertEquals("Good", NetworkRequest.parseJsonObject(
+                "{\"air_quality\":\"Good\"} \t\r\n").getString("air_quality"));
+        assertInvalidJsonObject("{\"air_quality\":\"Good\"} false");
+        assertInvalidJsonObject("{\"air_quality\":\"Good\"} trailing");
+        assertInvalidJsonObject("{\"air_quality\":\"Good\"} /* comment */");
+        assertInvalidJsonObject("[]");
+    }
     @Test
     public void buildUrlIncludesLatitudeAndLongitude() {
         assertEquals(
@@ -251,6 +262,15 @@ public class NetworkRequestTest {
             NetworkRequest.requireSingleJsonMediaType(contentTypes);
             fail("Expected ambiguous response media type headers to be rejected");
         } catch (IOException expected) {
+            // Expected path.
+        }
+    }
+
+    private void assertInvalidJsonObject(String body) {
+        try {
+            NetworkRequest.parseJsonObject(body);
+            fail("Expected non-object or trailing JSON content to be rejected");
+        } catch (JSONException expected) {
             // Expected path.
         }
     }

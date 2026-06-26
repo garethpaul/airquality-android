@@ -110,6 +110,8 @@ trusted hosted and contributor Make entry point and its caller-authority limits.
   validating strict Content-Length syntax and reading at most 1 MiB; it closes
   response and connection resources before JSON handling.
 - Backend response reads fail when a stream reports zero progress instead of spinning indefinitely.
+- Backend JSON parsing requires exactly one object and rejects trailing values,
+  comments, or garbage after the object before any state is published.
 - Generic NetworkRequest failure logs preserve protocol, JSON, and parameter
   categories without recording throwable stack traces, coordinate-bearing
   request URLs, or provider exception details.

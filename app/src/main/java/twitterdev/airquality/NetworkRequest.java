@@ -16,6 +16,7 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -330,6 +331,25 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
         }
     }
 
+    static JSONObject parseJsonObject(String responseBody) throws JSONException {
+        JSONTokener tokener = new JSONTokener(responseBody);
+        Object value = tokener.nextValue();
+        if (!(value instanceof JSONObject)) {
+            throw new JSONException("Air quality response must contain one JSON object");
+        }
+        while (tokener.more()) {
+            if (!isJsonWhitespace(tokener.next())) {
+                throw new JSONException("Air quality response contains trailing content");
+            }
+        }
+        return (JSONObject) value;
+    }
+
+    static boolean isJsonWhitespace(char character) {
+        return character == ' ' || character == '\t'
+                || character == '\r' || character == '\n';
+    }
+
     @Override
     protected JSONObject doInBackground(String... params) {
         try {
@@ -349,7 +369,7 @@ public class NetworkRequest extends AsyncTask<String, Void, JSONObject> {
                 //Log.i(getClass().getSimpleName(), "send  task - start");
                 HttpResponse response = httpclient.execute(httpget);
                 String responseBody = readResponseBody(response);
-                JSONObject json = new JSONObject(responseBody);
+                JSONObject json = parseJsonObject(responseBody);
                 return json;
 
 

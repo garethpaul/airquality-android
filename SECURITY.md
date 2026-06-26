@@ -57,6 +57,8 @@ LoginActivity is the only exported launcher; MainActivity is explicitly non-expo
   JSON parsing; response streams and the legacy HTTP connection manager must be
   closed.
 - Backend response reads fail when a stream reports zero progress instead of spinning indefinitely.
+- Backend JSON must contain exactly one object; trailing values or garbage are
+  rejected despite Android `JSONTokener`'s intentionally lenient parser.
 - Backend requests reject automatic redirects so intermediaries cannot move the
   fixed HTTPS request to another transport target.
 - Validated location values are serialized as canonical decimal coordinates so
