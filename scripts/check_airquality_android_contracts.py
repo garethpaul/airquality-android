@@ -1060,6 +1060,24 @@ def main():
         failures,
     )
     require(
+        "static JSONObject parseJsonObject(String responseBody) throws JSONException" in network
+        and "JSONTokener tokener = new JSONTokener(responseBody);" in network
+        and "Object value = tokener.nextValue();" in network
+        and "while (tokener.more())" in network
+        and "if (!isJsonWhitespace(tokener.next()))" in network
+        and "static boolean isJsonWhitespace(char character)" in network
+        and "tokener.nextClean()" not in network
+        and "return (JSONObject) value;" in network,
+        "NetworkRequest must require exactly one JSON object followed only by JSON whitespace",
+        failures,
+    )
+    require(
+        "JSONObject json = parseJsonObject(responseBody);" in network
+        and "new JSONObject(responseBody)" not in network,
+        "NetworkRequest transport must use the strict end-of-input JSON parser",
+        failures,
+    )
+    require(
         not re.search(r'Log\.w\(TAG,\s*"[^"]+",\s*e\)', network)
         and "printStackTrace()" not in network
         and "Log.getStackTraceString" not in network

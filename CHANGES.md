@@ -1,5 +1,20 @@
 # Changes
 
+## 2026-06-26 - P1 - Reject trailing backend JSON content
+
+- Replaced direct `JSONObject(String)` construction with a `JSONTokener` parser
+  that requires one object followed only by ignorable whitespace.
+- Rejected trailing JSON values, comments, and arbitrary garbage before the air
+  quality response can update activity state.
+- Added Android unit and portable source contracts for valid whitespace,
+  non-object roots, and trailing content.
+- Implementation head `2c2b85c9e59660531e46d8dc2bd89a44757fa274`
+  passed hosted Android verification, Python 3.10/3.12/3.14 checks, all CodeQL
+  analyses, and the aggregate gate on pull request #30.
+- Required Codex review stopped before analysis because OpenAI WebSocket and
+  HTTPS transports returned HTTP 401. Immutable local, remote, and PR heads
+  matched, and manual fallback review found no actionable defects.
+
 ## 2026-06-25 23:24 - P2 - Honor the declared location update interval
 
 ### Summary
