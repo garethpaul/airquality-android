@@ -46,12 +46,13 @@ near-continuous callbacks while waiting for a usable location.
 
 ### Blockers
 
-- None. Hosted Android verification remains the required exact-head gate.
+- Branch protection requires one approving review from a reviewer with write
+  access. The owner account cannot self-approve or bypass that requirement.
 
 ### Next action
 
-- Open a focused pull request and require hosted Android and CodeQL checks
-  before exact-head review and merge.
+- Obtain one independent write-access approval on PR #29; auto-merge can then
+  merge the already reviewed change after exact-head checks remain green.
 
 ## 2026-06-25
 
