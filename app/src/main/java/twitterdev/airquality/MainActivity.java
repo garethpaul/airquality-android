@@ -266,7 +266,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                 if (isNetworkEnabled) {
                     locationManager.requestLocationUpdates(
                             LocationManager.NETWORK_PROVIDER,
-                            10,
+                            MIN_TIME_BETWEEN_UPDATES,
                             MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
                     Log.d("Network", "Network Enabled");
                     if (locationManager != null) {
@@ -282,7 +282,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                     if (location == null) {
                         locationManager.requestLocationUpdates(
                                 LocationManager.GPS_PROVIDER,
-                                3,
+                                MIN_TIME_BETWEEN_UPDATES,
                                 MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
                         Log.d("GPS", "GPS Enabled");
                         if (locationManager != null) {
