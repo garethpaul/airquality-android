@@ -28,3 +28,10 @@ Official API reference:
   arbitrary text, and a non-object root.
 - Full portable `make check`, hosted Android, CodeQL, and exact-head review
   evidence is recorded before merge.
+- Pull request #30 implementation head
+  `2c2b85c9e59660531e46d8dc2bd89a44757fa274` passed hosted Android
+  verification, Python 3.10/3.12/3.14 checks, all CodeQL analyses, and the
+  aggregate gate.
+- Required Codex review stopped before analysis because OpenAI WebSocket and
+  HTTPS transports returned HTTP 401. Immutable head comparison and manual
+  fallback review found no actionable defects.
